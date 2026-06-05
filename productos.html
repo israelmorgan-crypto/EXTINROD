@@ -21,11 +21,11 @@
     <main>
       <section class="page-hero">
         <p class="eyebrow">Productos</p>
-        <h1>Catalogo por familias de solucion.</h1>
+        <h1>Catalogo para cotizacion tecnica.</h1>
         <p>
-          Muestra inicial de equipos para proyectos de seguridad, comunicacion,
-          infraestructura y control. Los precios y existencias se confirman al
-          momento de cotizar.
+          Selecciona equipos por familia, arma tu solicitud y nuestro equipo
+          valida compatibilidad, disponibilidad y precio vigente antes de
+          enviarte la propuesta formal.
         </p>
       </section>
 
@@ -41,14 +41,71 @@
         </aside>
 
         <div>
+          <div class="commerce-toolbar">
+            <div>
+              <p class="eyebrow">E-commerce asistido</p>
+              <h2>Productos para integrar a tu cotizacion</h2>
+            </div>
+            <button class="cart-button" type="button" data-open-cart>
+              Cotizacion <span id="cartCount">0</span>
+            </button>
+          </div>
           <div id="categoryVisuals" class="category-visuals"></div>
           <label class="search-box">
             <span>Buscar producto</span>
             <input id="searchInput" type="search" placeholder="Modelo, marca o descripcion" />
           </label>
-          <div id="productGrid" class="product-grid" aria-live="polite"></div>
+          <div id="productGrid" class="product-grid" aria-live="polite">
+            <article class="product-card" id="incendios">
+              <div class="product-media"><img src="https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/FIRE-LITE/ES1000X/ES1000X-g.PNG" alt="Panel direccionable contra incendio" loading="lazy" /></div>
+              <div class="product-body">
+                <div class="product-meta"><span>FIRE-LITE</span><span>ES1000X</span></div>
+                <span class="category-tag">Incendios</span>
+                <h3>Panel direccionable para deteccion y alarma</h3>
+                <p>Base para sistemas contra incendio con crecimiento por lazo, supervision y notificacion.</p>
+                <span class="stock">Disponibilidad por confirmar</span>
+                <div class="price-row"><span class="price">Cotizar</span><a class="detail-link" href="contacto.html">Solicitar</a></div>
+              </div>
+            </article>
+            <article class="product-card" id="voceo">
+              <div class="product-media"><img src="https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/FIRE-LITE/ECC50_100/ECC50_100-g.PNG" alt="Panel de voceo y evacuacion" loading="lazy" /></div>
+              <div class="product-body">
+                <div class="product-meta"><span>FIRE-LITE</span><span>ECC50/100</span></div>
+                <span class="category-tag">Voceo</span>
+                <h3>Sistema de voceo y evacuacion</h3>
+                <p>Audio de emergencia para mensajes claros, zonas de evacuacion y respaldo operativo.</p>
+                <span class="stock">Disponibilidad por confirmar</span>
+                <div class="price-row"><span class="price">Cotizar</span><a class="detail-link" href="contacto.html">Solicitar</a></div>
+              </div>
+            </article>
+            <article class="product-card" id="videovigilancia">
+              <div class="product-media"><img src="https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS2CD1147G2HLIUF/DS2CD1147G2HLIUF-g.PNG" alt="Camara de video vigilancia" loading="lazy" /></div>
+              <div class="product-body">
+                <div class="product-meta"><span>HIKVISION</span><span>IP</span></div>
+                <span class="category-tag">Video vigilancia</span>
+                <h3>Camaras IP y grabadores NVR</h3>
+                <p>Soluciones de monitoreo para edificios, industria, comercio y control perimetral.</p>
+                <span class="stock">Disponibilidad por confirmar</span>
+                <div class="price-row"><span class="price">Cotizar</span><a class="detail-link" href="contacto.html">Solicitar</a></div>
+              </div>
+            </article>
+          </div>
         </div>
       </section>
+
+      <aside class="quote-drawer" id="quoteDrawer" aria-label="Cotizacion de productos" aria-hidden="true">
+        <div class="quote-card">
+          <div class="quote-head">
+            <div>
+              <p class="eyebrow">Solicitud</p>
+              <h2>Productos seleccionados</h2>
+            </div>
+            <button class="icon-close" type="button" data-close-cart aria-label="Cerrar">×</button>
+          </div>
+          <div id="cartItems" class="cart-items"></div>
+          <a class="button primary" id="quoteWhatsApp" href="contacto.html">Solicitar cotizacion</a>
+        </div>
+      </aside>
     </main>
 
     <footer class="site-footer">

@@ -5,7 +5,7 @@ const products = [
     name: "Detector fotoelectrico de humo con temperatura y sirena",
     model: "4WTAB",
     brand: "SYSTEM SENSOR",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/2WTAB/2WTAB.jpg",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/2WTAB/2WTAB.jpg",
     url: "https://syscom.mx/producto/4W-TAB-SYSTEM-SENSOR-74963.html",
     stock: 353,
     price: 105.6,
@@ -41,7 +41,7 @@ const products = [
     name: "Amplificador inteligente de 125 W para evacuacion",
     model: "ECS125W",
     brand: "SILENT KNIGHT",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/SILENTKNIGHT/ECS125W/ECS125W-g.jpg",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/SILENTKNIGHT/ECS125W/ECS125W-g.jpg",
     url: "https://syscom.mx/producto/ECS125W-SILENT-KNIGHT-BY-HONEYWELL-82464.html",
     stock: 1,
     price: 2536.4,
@@ -53,7 +53,7 @@ const products = [
     name: "Bobina de cable UTP Cat 6 cobre, 305 m",
     model: "NUC6C04BUME",
     brand: "PANDUIT",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/PANDUIT/NUC6C04BUME/portada_0S160.PNG",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/PANDUIT/NUC6C04BUME/portada_0S160.PNG",
     url: "https://syscom.mx/producto/NUC6C04BU-ME-PANDUIT-243290.html",
     stock: 500,
     price: 394.73,
@@ -89,7 +89,7 @@ const products = [
     name: "Adaptador Easy Swap Plenum para aire acondicionado",
     model: "PLHC52G57",
     brand: "HOFFMAN",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HOFFMAN/PLHC52G57/portada_0S160.PNG",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HOFFMAN/PLHC52G57/portada_0S160.PNG",
     url: "https://syscom.mx/producto/PLHC52G57-HOFFMAN-240057.html",
     stock: 0,
     price: 830.48,
@@ -101,7 +101,7 @@ const products = [
     name: "NVR 16 canales IP 4K con 16 puertos PoE+",
     model: "DS7716NXIK4/16P(E)",
     brand: "HIKVISION",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS7716NXIK4/16PE/portada_0S160.PNG",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS7716NXIK4/16PE/portada_0S160.PNG",
     url: "https://syscom.mx/producto/DS-7716NXI-K4/16P(E)-HIKVISION-242187.html",
     stock: 184,
     price: 733.13,
@@ -137,7 +137,7 @@ const products = [
     name: "Cerradura con huella, codigo, llave y smartphone",
     model: "89186",
     brand: "YALE-ASSA ABLOY",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/ASSAABLOY/89186/89186-g.png",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/ASSAABLOY/89186/89186-g.png",
     url: "https://syscom.mx/producto/89186-YALE-ASSA-ABLOY-94787.html",
     stock: 0,
     price: 680.65,
@@ -168,7 +168,7 @@ const categories = [
     id: "climas",
     name: "Climas",
     summary: "Accesorios y soluciones para aire acondicionado tecnico.",
-    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HOFFMAN/PLHC52G57/portada_0S160.PNG",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HOFFMAN/PLHC52G57/portada_0S160.PNG",
   },
   {
     id: "videovigilancia",
@@ -188,7 +188,12 @@ const grid = document.querySelector("#productGrid");
 const searchInput = document.querySelector("#searchInput");
 const categoryButtons = document.querySelectorAll(".category-button");
 const categoryVisuals = document.querySelector("#categoryVisuals");
+const cartCount = document.querySelector("#cartCount");
+const quoteDrawer = document.querySelector("#quoteDrawer");
+const cartItems = document.querySelector("#cartItems");
+const quoteWhatsApp = document.querySelector("#quoteWhatsApp");
 let activeCategory = location.hash ? location.hash.slice(1) : "all";
+let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
 
 const slides = document.querySelectorAll(".hero-slide");
 const dotsHost = document.querySelector(".slider-dots");
@@ -205,7 +210,10 @@ function money(value) {
 }
 
 function normalize(text) {
-  return text.toLowerCase();
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function productMatches(product, query) {
@@ -257,13 +265,73 @@ function renderProducts() {
             </span>
             <div class="price-row">
               <span class="price">${money(product.price)}</span>
-              <a class="detail-link" href="contacto.html">Solicitar ficha</a>
+              <button class="detail-link" type="button" data-add-product="${product.model}">Agregar</button>
             </div>
           </div>
         </article>
       `
     )
     .join("");
+}
+
+function persistCart() {
+  localStorage.setItem("extinrod_quote_cart", JSON.stringify(quoteCart));
+}
+
+function updateCart() {
+  if (!cartCount || !cartItems || !quoteWhatsApp) return;
+  const totalItems = quoteCart.reduce((sum, item) => sum + item.qty, 0);
+  cartCount.textContent = totalItems;
+
+  if (!quoteCart.length) {
+    cartItems.innerHTML = '<p class="empty-state">Aun no agregas productos.</p>';
+    quoteWhatsApp.href = "contacto.html";
+    return;
+  }
+
+  cartItems.innerHTML = quoteCart
+    .map(
+      (item) => `
+        <article class="cart-line">
+          <div>
+            <strong>${item.model}</strong>
+            <span>${item.name}</span>
+          </div>
+          <div class="cart-actions">
+            <button type="button" data-dec-product="${item.model}">-</button>
+            <span>${item.qty}</span>
+            <button type="button" data-inc-product="${item.model}">+</button>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+
+  const lines = quoteCart.map((item) => `${item.qty} x ${item.model} - ${item.name}`).join("%0A");
+  quoteWhatsApp.href = `https://wa.me/525550536158?text=Hola%20EXTINROD,%20quiero%20cotizar:%0A${lines}`;
+}
+
+function addToCart(model) {
+  const product = products.find((item) => item.model === model);
+  if (!product) return;
+  const existing = quoteCart.find((item) => item.model === model);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    quoteCart.push({ model: product.model, name: product.name, brand: product.brand, qty: 1 });
+  }
+  persistCart();
+  updateCart();
+  quoteDrawer?.classList.add("open");
+  quoteDrawer?.setAttribute("aria-hidden", "false");
+}
+
+function changeCartQty(model, delta) {
+  quoteCart = quoteCart
+    .map((item) => (item.model === model ? { ...item, qty: item.qty + delta } : item))
+    .filter((item) => item.qty > 0);
+  persistCart();
+  updateCart();
 }
 
 if (grid && searchInput) {
@@ -298,7 +366,31 @@ if (grid && searchInput) {
   });
 
   searchInput.addEventListener("input", renderProducts);
+  grid.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-add-product]");
+    if (!button) return;
+    addToCart(button.dataset.addProduct);
+  });
+
+  cartItems?.addEventListener("click", (event) => {
+    const inc = event.target.closest("[data-inc-product]");
+    const dec = event.target.closest("[data-dec-product]");
+    if (inc) changeCartQty(inc.dataset.incProduct, 1);
+    if (dec) changeCartQty(dec.dataset.decProduct, -1);
+  });
+
+  document.querySelector("[data-open-cart]")?.addEventListener("click", () => {
+    quoteDrawer?.classList.add("open");
+    quoteDrawer?.setAttribute("aria-hidden", "false");
+  });
+
+  document.querySelector("[data-close-cart]")?.addEventListener("click", () => {
+    quoteDrawer?.classList.remove("open");
+    quoteDrawer?.setAttribute("aria-hidden", "true");
+  });
+
   renderProducts();
+  updateCart();
 }
 
 function showSlide(index) {
