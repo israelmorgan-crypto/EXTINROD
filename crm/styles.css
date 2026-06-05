@@ -1,14 +1,15 @@
 :root {
-  --ink: #171717;
-  --muted: #6b7075;
-  --paper: #f5f4ef;
+  --ink: #14171a;
+  --muted: #66717b;
+  --paper: #f4f5f6;
   --white: #ffffff;
-  --line: #ded9cf;
+  --line: #dfe4e8;
   --red: #b51f2b;
-  --blue: #193f56;
+  --blue: #12384e;
+  --navy: #0f2635;
   --green: #25704f;
   --gold: #b8892e;
-  --shadow: 0 18px 40px rgba(23, 23, 23, 0.1);
+  --shadow: 0 18px 40px rgba(15, 38, 53, 0.12);
 }
 
 * {
@@ -21,8 +22,84 @@ body {
   display: grid;
   grid-template-columns: 260px 1fr;
   color: var(--ink);
-  background: var(--paper);
+  background:
+    linear-gradient(135deg, rgba(181, 31, 43, 0.08), transparent 28%),
+    linear-gradient(315deg, rgba(18, 56, 78, 0.12), transparent 32%),
+    var(--paper);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+body.locked {
+  display: block;
+}
+
+body.locked [data-private] {
+  display: none;
+}
+
+.login-screen {
+  min-height: 100vh;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 28px;
+  background:
+    linear-gradient(90deg, rgba(15, 38, 53, 0.92), rgba(15, 38, 53, 0.62)),
+    url("../assets/bg-extinrod-operacion.jpg") center / cover;
+}
+
+body.locked .login-screen {
+  display: flex;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  display: grid;
+  gap: 14px;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  color: var(--white);
+  background: rgba(11, 25, 35, 0.88);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
+.login-brand img {
+  width: 150px;
+  filter: brightness(0) invert(1);
+}
+
+.login-card h1 {
+  font-size: clamp(2rem, 8vw, 3.1rem);
+}
+
+.login-copy {
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.6;
+}
+
+.login-card label,
+.dialog-card label {
+  display: grid;
+  gap: 7px;
+  font-weight: 900;
+}
+
+.login-card label {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.login-card input {
+  border-color: rgba(255, 255, 255, 0.24);
+  color: var(--white);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.login-error {
+  min-height: 20px;
+  margin: 0;
+  color: #ffb5bd;
+  font-weight: 800;
 }
 
 .sidebar {
@@ -33,7 +110,7 @@ body {
   align-content: start;
   gap: 28px;
   padding: 24px;
-  background: #171b1c;
+  background: linear-gradient(180deg, #10191f, #182d3a);
   color: var(--white);
 }
 
@@ -73,7 +150,17 @@ body {
   justify-content: space-between;
   gap: 18px;
   align-items: center;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
+  padding: 22px;
+  border: 1px solid rgba(18, 56, 78, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow);
+}
+
+.app-header p {
+  max-width: 720px;
+  color: var(--muted);
 }
 
 .eyebrow {
@@ -92,7 +179,9 @@ p {
 
 h1 {
   margin-bottom: 0;
-  font-size: clamp(2rem, 5vw, 3.8rem);
+  color: var(--navy);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  letter-spacing: 0;
 }
 
 h2 {
@@ -112,6 +201,14 @@ button {
   cursor: pointer;
 }
 
+.ghost-action {
+  width: 100%;
+  margin-top: min(16vh, 120px);
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -128,9 +225,19 @@ button {
 }
 
 .kpi-grid article {
+  position: relative;
+  overflow: hidden;
   display: grid;
   gap: 10px;
-  padding: 18px;
+  padding: 20px;
+}
+
+.kpi-grid article::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--red), var(--gold));
 }
 
 .kpi-grid span {
@@ -155,7 +262,7 @@ button {
 }
 
 .panel {
-  padding: 18px;
+  padding: 20px;
 }
 
 .panel-header {
@@ -189,7 +296,7 @@ table {
 
 th,
 td {
-  padding: 13px 10px;
+  padding: 14px 10px;
   border-bottom: 1px solid var(--line);
   text-align: left;
 }
@@ -224,7 +331,7 @@ th {
 }
 
 .mini-card {
-  padding: 12px;
+  padding: 14px;
   border: 1px solid var(--line);
   border-radius: 6px;
   background: #fbfaf7;
@@ -238,6 +345,45 @@ th {
 .mini-card span {
   color: var(--muted);
   font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.report-panel {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.report-panel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.report-grid article {
+  min-height: 112px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 8px;
+  color: var(--white);
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+}
+
+.report-grid strong {
+  font-size: 2rem;
+}
+
+.report-grid span {
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 800;
 }
 
 dialog {
@@ -255,10 +401,7 @@ dialog {
 }
 
 .dialog-card label {
-  display: grid;
-  gap: 7px;
   color: var(--muted);
-  font-weight: 900;
 }
 
 .dialog-actions {
@@ -289,7 +432,9 @@ dialog {
 
   .kpi-grid,
   .workspace,
-  .workspace.lower {
+  .workspace.lower,
+  .report-panel,
+  .report-grid {
     grid-template-columns: 1fr;
   }
 

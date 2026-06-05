@@ -3,11 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow,noarchive" />
     <title>CRM EXTINROD</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body>
-    <aside class="sidebar">
+  <body class="locked">
+    <section class="login-screen" id="loginScreen" aria-label="Acceso al CRM">
+      <form class="login-card" id="loginForm">
+        <a class="login-brand" href="../index.html">
+          <img src="../../LOGO EXTINROD.png" alt="EXTINROD" />
+        </a>
+        <p class="eyebrow">Acceso interno</p>
+        <h1>CRM EXTINROD</h1>
+        <p class="login-copy">Panel privado para seguimiento comercial, productividad y servicios programados.</p>
+        <label>Correo
+          <input id="loginEmail" type="email" autocomplete="username" required />
+        </label>
+        <label>Contrasena
+          <input id="loginPassword" type="password" autocomplete="current-password" required />
+        </label>
+        <p class="login-error" id="loginError" role="alert"></p>
+        <button class="primary-action" type="submit">Entrar al CRM</button>
+      </form>
+    </section>
+
+    <aside class="sidebar" data-private>
       <a class="brand" href="../index.html">
         <img src="../../LOGO EXTINROD.png" alt="EXTINROD" />
       </a>
@@ -19,13 +39,15 @@
         <a href="#tareas">Tareas</a>
         <a href="#reportes">Reportes</a>
       </nav>
+      <button class="ghost-action" type="button" id="logoutButton">Cerrar sesion</button>
     </aside>
 
-    <main class="app-shell">
+    <main class="app-shell" data-private>
       <header class="app-header">
         <div>
           <p class="eyebrow">Panel interno</p>
           <h1>CRM EXTINROD</h1>
+          <p>Control de clientes, oportunidades, seguimientos y tareas del equipo.</p>
         </div>
         <button class="primary-action" type="button" data-open-form>Nuevo seguimiento</button>
       </header>
@@ -40,7 +62,10 @@
       <section class="workspace">
         <div class="panel" id="clientes">
           <div class="panel-header">
-            <h2>Clientes y prospectos</h2>
+            <div>
+              <p class="eyebrow">Comercial</p>
+              <h2>Clientes y prospectos</h2>
+            </div>
             <input id="searchInput" type="search" placeholder="Buscar cliente, contacto o servicio" />
           </div>
           <div class="table-wrap">
@@ -54,6 +79,7 @@
         </div>
 
         <div class="panel side-panel" id="seguimientos">
+          <p class="eyebrow">Agenda</p>
           <h2>Proximos seguimientos</h2>
           <div id="followUpList" class="follow-list"></div>
         </div>
@@ -61,12 +87,27 @@
 
       <section class="workspace lower">
         <div class="panel" id="cotizaciones">
+          <p class="eyebrow">Ventas</p>
           <h2>Cotizaciones</h2>
           <div id="quoteList" class="quote-list"></div>
         </div>
         <div class="panel" id="tareas">
+          <p class="eyebrow">Equipo</p>
           <h2>Productividad y tareas</h2>
           <div id="taskList" class="task-list"></div>
+        </div>
+      </section>
+
+      <section class="panel report-panel" id="reportes">
+        <div>
+          <p class="eyebrow">Reportes</p>
+          <h2>Resumen operativo</h2>
+          <p>Este tablero concentra la actividad comercial y de servicio. La siguiente etapa sera conectarlo a Supabase para guardar usuarios, roles, historial y evidencia de cada seguimiento.</p>
+        </div>
+        <div class="report-grid">
+          <article><strong>85%</strong><span>Seguimientos atendidos</span></article>
+          <article><strong>12</strong><span>Servicios programados</span></article>
+          <article><strong>4</strong><span>Cotizaciones por cerrar</span></article>
         </div>
       </section>
     </main>

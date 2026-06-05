@@ -39,17 +39,38 @@ const seedTasks = [
   { tarea: "Validar stock de detectores", empleado: "Carlos", estado: "Pendiente" },
 ];
 
+const authConfig = {
+  email: "admin@extinrod.com",
+  passwordHash: "4a1d2ade5dd771d8702998e619ca661fd769d57bb783bcee0ecc01bdfb6f0b06",
+};
+
 const customers = JSON.parse(localStorage.getItem("extinrod_customers") || "null") || seedCustomers;
 const followUps = JSON.parse(localStorage.getItem("extinrod_followups") || "null") || seedFollowUps;
 const quotes = seedQuotes;
 const tasks = seedTasks;
 
+const loginForm = document.querySelector("#loginForm");
+const loginEmail = document.querySelector("#loginEmail");
+const loginPassword = document.querySelector("#loginPassword");
+const loginError = document.querySelector("#loginError");
+const logoutButton = document.querySelector("#logoutButton");
 const customerRows = document.querySelector("#customerRows");
 const followUpList = document.querySelector("#followUpList");
 const quoteList = document.querySelector("#quoteList");
 const taskList = document.querySelector("#taskList");
 const searchInput = document.querySelector("#searchInput");
 const dialog = document.querySelector("#followDialog");
+
+async function sha256(value) {
+  const data = new TextEncoder().encode(value);
+  const buffer = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function setLockedState() {
+  const isActive = sessionStorage.getItem("extinrod_crm_session") === "active";
+  document.body.classList.toggle("locked", !isActive);
+}
 
 function renderCustomers(items = customers) {
   customerRows.innerHTML = items
@@ -108,12 +129,34 @@ dialog.addEventListener("submit", () => {
   dialog.close();
 });
 
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const email = loginEmail.value.trim().toLowerCase();
+  const passwordHash = await sha256(loginPassword.value);
+
+  if (email === authConfig.email && passwordHash === authConfig.passwordHash) {
+    sessionStorage.setItem("extinrod_crm_session", "active");
+    loginPassword.value = "";
+    loginError.textContent = "";
+    setLockedState();
+    return;
+  }
+
+  loginError.textContent = "Correo o contrasena incorrectos.";
+});
+
+logoutButton.addEventListener("click", () => {
+  sessionStorage.removeItem("extinrod_crm_session");
+  setLockedState();
+});
+
 function renderAll() {
   renderCustomers();
   renderMiniCards(followUpList, followUps, (item) => `<strong>${item.cliente}</strong><span>${item.fecha} - ${item.accion}</span>`);
-  renderMiniCards(quoteList, quotes, (item) => `<strong>${item.folio} · ${item.cliente}</strong><span>${item.total} · ${item.estado}</span>`);
-  renderMiniCards(taskList, tasks, (item) => `<strong>${item.tarea}</strong><span>${item.empleado} · ${item.estado}</span>`);
+  renderMiniCards(quoteList, quotes, (item) => `<strong>${item.folio} - ${item.cliente}</strong><span>${item.total} - ${item.estado}</span>`);
+  renderMiniCards(taskList, tasks, (item) => `<strong>${item.tarea}</strong><span>${item.empleado} - ${item.estado}</span>`);
   updateKpis();
 }
 
+setLockedState();
 renderAll();
