@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CRM EXTINROD</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="../index.html">
+        <img src="../../LOGO EXTINROD.png" alt="EXTINROD" />
+      </a>
+      <nav aria-label="CRM">
+        <a class="active" href="#dashboard">Dashboard</a>
+        <a href="#clientes">Clientes</a>
+        <a href="#seguimientos">Seguimientos</a>
+        <a href="#cotizaciones">Cotizaciones</a>
+        <a href="#tareas">Tareas</a>
+        <a href="#reportes">Reportes</a>
+      </nav>
+    </aside>
+
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">Panel interno</p>
+          <h1>CRM EXTINROD</h1>
+        </div>
+        <button class="primary-action" type="button" data-open-form>Nuevo seguimiento</button>
+      </header>
+
+      <section id="dashboard" class="kpi-grid" aria-label="Indicadores">
+        <article><span>Clientes activos</span><strong id="kpiClientes">0</strong></article>
+        <article><span>Seguimientos abiertos</span><strong id="kpiSeguimientos">0</strong></article>
+        <article><span>Cotizaciones en proceso</span><strong id="kpiCotizaciones">0</strong></article>
+        <article><span>Tareas vencidas</span><strong id="kpiVencidas">0</strong></article>
+      </section>
+
+      <section class="workspace">
+        <div class="panel" id="clientes">
+          <div class="panel-header">
+            <h2>Clientes y prospectos</h2>
+            <input id="searchInput" type="search" placeholder="Buscar cliente, contacto o servicio" />
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Cliente</th><th>Contacto</th><th>Servicio</th><th>Estado</th><th>Responsable</th></tr>
+              </thead>
+              <tbody id="customerRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel side-panel" id="seguimientos">
+          <h2>Proximos seguimientos</h2>
+          <div id="followUpList" class="follow-list"></div>
+        </div>
+      </section>
+
+      <section class="workspace lower">
+        <div class="panel" id="cotizaciones">
+          <h2>Cotizaciones</h2>
+          <div id="quoteList" class="quote-list"></div>
+        </div>
+        <div class="panel" id="tareas">
+          <h2>Productividad y tareas</h2>
+          <div id="taskList" class="task-list"></div>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="followDialog">
+      <form method="dialog" class="dialog-card">
+        <h2>Nuevo seguimiento</h2>
+        <label>Cliente<input id="formCliente" required /></label>
+        <label>Contacto<input id="formContacto" required /></label>
+        <label>Servicio<input id="formServicio" required /></label>
+        <label>Proxima accion<textarea id="formAccion" rows="3" required></textarea></label>
+        <div class="dialog-actions">
+          <button type="button" data-close-form>Cancelar</button>
+          <button class="primary-action" type="submit">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>

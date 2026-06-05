@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contacto | EXTINROD</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html"><img src="../LOGO EXTINROD.png" alt="EXTINROD" /><span>EXTINROD</span></a>
+      <nav class="main-nav" aria-label="Principal">
+        <a href="index.html">Home</a>
+        <a href="nosotros.html">Nosotros</a>
+        <div class="nav-menu"><a href="servicios.html">Servicios</a><div class="submenu"><a href="servicios.html#ingenierias">Ingenierias</a><a href="servicios.html#tramites">Gestion de tramites</a><a href="servicios.html#mantenimientos">Mantenimientos</a><a href="servicios.html#construccion">Construccion y remodelacion</a></div></div>
+        <div class="nav-menu"><a href="productos.html">Productos</a><div class="submenu"><a href="productos.html#incendios">Incendios</a><a href="productos.html#voceo">Voceo</a><a href="productos.html#data">Data</a><a href="productos.html#climas">Climas</a><a href="productos.html#videovigilancia">Video vigilancia</a><a href="productos.html#accesos">Control de accesos</a></div></div>
+        <a class="active" href="contacto.html">Contacto</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero contact-hero">
+        <p class="eyebrow">Contacto</p>
+        <h1>Cuentanos que sistema necesitas cotizar.</h1>
+        <p>
+          Comparte planos, cantidades, marcas requeridas o alcance de obra. Te
+          ayudamos a seleccionar equipo, validar compatibilidades y preparar una
+          propuesta.
+        </p>
+      </section>
+
+      <section class="contact-layout">
+        <div class="contact-panel">
+          <h2>Datos de atencion</h2>
+          <a href="mailto:contacto@extinrod.mx">contacto@extinrod.mx</a>
+          <a href="tel:+525550536158">55 5053 6158</a>
+          <p>Av. Xochiapan 173, Pedregal de Santo Domingo, Coyoacan, Ciudad de Mexico.</p>
+        </div>
+        <form class="contact-form" action="mailto:contacto@extinrod.mx" method="post" enctype="text/plain">
+          <label>Nombre<input name="nombre" required /></label>
+          <label>Correo<input type="email" name="correo" required /></label>
+          <label>Servicio o producto<select name="interes"><option>Ingenieria</option><option>Gestion de tramites</option><option>Mantenimiento</option><option>Construccion y remodelacion</option><option>Productos especializados</option></select></label>
+          <label>Mensaje<textarea name="mensaje" rows="5" required></textarea></label>
+          <button class="button primary" type="submit">Enviar solicitud</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-brand"><img src="../LOGO EXTINROD.png" alt="EXTINROD" /><p>Prevencion contra incendios, proteccion civil, mantenimiento e integracion de sistemas de seguridad.</p></div>
+      <nav class="footer-column" aria-label="Mapa del sitio"><h3>Sitio</h3><a href="index.html">Home</a><a href="nosotros.html">Nosotros</a><a href="servicios.html">Servicios</a><a href="productos.html">Productos</a><a href="contacto.html">Contacto</a></nav>
+      <nav class="footer-column" aria-label="Servicios"><h3>Servicios</h3><a href="servicios.html#ingenierias">Ingenierias</a><a href="servicios.html#tramites">Gestion de tramites</a><a href="servicios.html#mantenimientos">Mantenimientos</a><a href="servicios.html#construccion">Construccion y remodelacion</a></nav>
+      <nav class="footer-column" aria-label="Productos"><h3>Productos</h3><a href="productos.html#incendios">Incendios</a><a href="productos.html#voceo">Voceo</a><a href="productos.html#data">Data</a><a href="productos.html#climas">Climas</a><a href="productos.html#videovigilancia">Video vigilancia</a><a href="productos.html#accesos">Control de accesos</a></nav>
+      <div class="footer-column footer-contact"><h3>Contacto</h3><a href="mailto:contacto@extinrod.mx">contacto@extinrod.mx</a><a href="tel:+525550536158">55 5053 6158</a><span>Ciudad de Mexico</span></div>
+      <div class="footer-bottom"><span>EXTINROD</span><span>contacto@extinrod.mx</span></div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,343 @@
+const products = [
+  {
+    category: "incendios",
+    categoryName: "Incendios",
+    name: "Detector fotoelectrico de humo con temperatura y sirena",
+    model: "4WTAB",
+    brand: "SYSTEM SENSOR",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/2WTAB/2WTAB.jpg",
+    url: "https://syscom.mx/producto/4W-TAB-SYSTEM-SENSOR-74963.html",
+    stock: 353,
+    price: 105.6,
+    description: "Detector convencional de 4 hilos con sensor termico, sirena integrada de 85 dB y rechazo de falsas alarmas.",
+  },
+  {
+    category: "incendios",
+    categoryName: "Incendios",
+    name: "Sirena con senal sonora y luminosa para evacuacion",
+    model: "HKSG8015",
+    brand: "HIKVISION",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/HKSG8015/HKSG8015-g.PNG",
+    url: "https://syscom.mx/",
+    stock: 1,
+    price: 19.89,
+    description: "Dispositivo de alarma para sistemas de deteccion, con cableado de dos hilos sin polaridad.",
+  },
+  {
+    category: "voceo",
+    categoryName: "Voceo",
+    name: "Centro de comando de emergencia para voceo y evacuacion",
+    model: "ECC50/100",
+    brand: "FIRE-LITE",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/FIRE-LITE/ECC50_100/ECC50_100-g.PNG",
+    url: "https://syscom.mx/producto/ECC-50/100-FIRE-LITE-85820.html",
+    stock: 9,
+    price: 3627.07,
+    description: "Panel de evacuacion por voz con 50 W de audio, expandible a 100 W y diseno modular.",
+  },
+  {
+    category: "voceo",
+    categoryName: "Voceo",
+    name: "Amplificador inteligente de 125 W para evacuacion",
+    model: "ECS125W",
+    brand: "SILENT KNIGHT",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/SILENTKNIGHT/ECS125W/ECS125W-g.jpg",
+    url: "https://syscom.mx/producto/ECS125W-SILENT-KNIGHT-BY-HONEYWELL-82464.html",
+    stock: 1,
+    price: 2536.4,
+    description: "Amplificador distribuido para audio de emergencia, con fuente y respaldo de bateria.",
+  },
+  {
+    category: "data",
+    categoryName: "Data",
+    name: "Bobina de cable UTP Cat 6 cobre, 305 m",
+    model: "NUC6C04BUME",
+    brand: "PANDUIT",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/PANDUIT/NUC6C04BUME/portada_0S160.PNG",
+    url: "https://syscom.mx/producto/NUC6C04BU-ME-PANDUIT-243290.html",
+    stock: 500,
+    price: 394.73,
+    description: "Cable UTP categoria 6, 24 AWG, 1000 Mbps, PVC CM, probado bajo ANSI/TIA-568-C.2.",
+  },
+  {
+    category: "data",
+    categoryName: "Data",
+    name: "Bobina de cable UTP Cat 6 Riser, 305 m",
+    model: "NUR6C04BUC",
+    brand: "PANDUIT",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/PANDUIT/NUR6C04BUC/NUR6C04BUC-g.PNG",
+    url: "https://syscom.mx/producto/NUR6C04BU-C-PANDUIT-74374.html",
+    stock: 500,
+    price: 437.33,
+    description: "Cable categoria 6 CMR con conductor de cobre solido, marcas de longitud y soporte PoE.",
+  },
+  {
+    category: "climas",
+    categoryName: "Climas",
+    name: "Terminal a pared para aire acondicionado",
+    model: "THACKITTP",
+    brand: "THORSMAN",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/THORSMAN/THACKITTP/THACKITTP-g.PNG",
+    url: "https://syscom.mx/producto/TH-ACKIT-TP-THORSMAN-242257.html",
+    stock: 0,
+    price: 12.84,
+    description: "Kit modular de PVC para instalacion de sistemas minisplit y canalizacion de accesorios.",
+  },
+  {
+    category: "climas",
+    categoryName: "Climas",
+    name: "Adaptador Easy Swap Plenum para aire acondicionado",
+    model: "PLHC52G57",
+    brand: "HOFFMAN",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HOFFMAN/PLHC52G57/portada_0S160.PNG",
+    url: "https://syscom.mx/producto/PLHC52G57-HOFFMAN-240057.html",
+    stock: 0,
+    price: 830.48,
+    description: "Adaptador de acero para reemplazar acondicionadores en gabinetes sin modificar el recorte.",
+  },
+  {
+    category: "videovigilancia",
+    categoryName: "Video vigilancia",
+    name: "NVR 16 canales IP 4K con 16 puertos PoE+",
+    model: "DS7716NXIK4/16P(E)",
+    brand: "HIKVISION",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS7716NXIK4/16PE/portada_0S160.PNG",
+    url: "https://syscom.mx/producto/DS-7716NXI-K4/16P(E)-HIKVISION-242187.html",
+    stock: 184,
+    price: 733.13,
+    description: "NVR AcuSense con reconocimiento facial, 4 bahias de disco duro y salidas HDMI 4K.",
+  },
+  {
+    category: "videovigilancia",
+    categoryName: "Video vigilancia",
+    name: "PTZ IP 8 MP 4K, 25X zoom, IR 150 m",
+    model: "DS2DE5825IWGE",
+    brand: "HIKVISION",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS2DE5825IWGE/DS2DE5825IWGE-g.PNG",
+    url: "https://syscom.mx/producto/DS-2DE5825IWG-E-HIKVISION-235661.html",
+    stock: 440,
+    price: 780,
+    description: "Camara PTZ 4K con AcuSeek, AcuSearch, deteccion facial, IR inteligente e IP67.",
+  },
+  {
+    category: "accesos",
+    categoryName: "Control de accesos",
+    name: "Kit control de acceso con huella, tarjeta y chapa magnetica",
+    model: "LF10KITV2",
+    brand: "ZKTECO",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/ZKTECO/LF10KITV2/LF10KITV2-g.PNG",
+    url: "https://syscom.mx/producto/LF10KITV2-ZKTECO-204864.html",
+    stock: 119,
+    price: 179.39,
+    description: "Kit con lector biometrico, 1,500 huellas, 5,000 tarjetas, TCP/IP y cerradura magnetica.",
+  },
+  {
+    category: "accesos",
+    categoryName: "Control de accesos",
+    name: "Cerradura con huella, codigo, llave y smartphone",
+    model: "89186",
+    brand: "YALE-ASSA ABLOY",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/ASSAABLOY/89186/89186-g.png",
+    url: "https://syscom.mx/producto/89186-YALE-ASSA-ABLOY-94787.html",
+    stock: 0,
+    price: 680.65,
+    description: "Cerradura inteligente con Bluetooth, lector biometrico, codigos y alarma antiintrusion.",
+  },
+];
+
+const categories = [
+  {
+    id: "incendios",
+    name: "Incendios",
+    summary: "Deteccion, paneles, estaciones, sirenas y notificacion.",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/FIRE-LITE/ES1000X/ES1000X-g.PNG",
+  },
+  {
+    id: "voceo",
+    name: "Voceo",
+    summary: "Audio de evacuacion, amplificadores y mensajes de emergencia.",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/NOTIFIER/NFC50_100/NFC50_100-g.PNG",
+  },
+  {
+    id: "data",
+    name: "Data",
+    summary: "Cableado estructurado, conectividad, racks y redes.",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/PANDUIT/NUR6C04BUC/NUR6C04BUC-g.PNG",
+  },
+  {
+    id: "climas",
+    name: "Climas",
+    summary: "Accesorios y soluciones para aire acondicionado tecnico.",
+    image: "http://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HOFFMAN/PLHC52G57/portada_0S160.PNG",
+  },
+  {
+    id: "videovigilancia",
+    name: "Video vigilancia",
+    summary: "Camaras IP, NVR, analiticos, PoE y monitoreo.",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/HIKVISION/DS2CD1147G2HLIUF/DS2CD1147G2HLIUF-g.PNG",
+  },
+  {
+    id: "accesos",
+    name: "Control de accesos",
+    summary: "Biometria, cerraduras, lectoras y kits de puerta.",
+    image: "https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/ZKTECO/LF10KITV2/LF10KITV2-g.PNG",
+  },
+];
+
+const grid = document.querySelector("#productGrid");
+const searchInput = document.querySelector("#searchInput");
+const categoryButtons = document.querySelectorAll(".category-button");
+const categoryVisuals = document.querySelector("#categoryVisuals");
+let activeCategory = location.hash ? location.hash.slice(1) : "all";
+
+const slides = document.querySelectorAll(".hero-slide");
+const dotsHost = document.querySelector(".slider-dots");
+const nextButton = document.querySelector("[data-slide-next]");
+const prevButton = document.querySelector("[data-slide-prev]");
+let activeSlide = 0;
+let slideTimer;
+
+function money(value) {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
+
+function normalize(text) {
+  return text.toLowerCase();
+}
+
+function productMatches(product, query) {
+  const text = normalize(`${product.name} ${product.model} ${product.brand} ${product.categoryName}`);
+  return text.includes(normalize(query));
+}
+
+function filteredProducts() {
+  const query = searchInput.value.trim();
+  return products.filter((product) => {
+    const matchesCategory = activeCategory === "all" || product.category === activeCategory;
+    const matchesQuery = query === "" || productMatches(product, query);
+    return matchesCategory && matchesQuery;
+  });
+}
+
+function syncButtons() {
+  categoryButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.category === activeCategory);
+  });
+}
+
+function renderProducts() {
+  syncButtons();
+  const items = filteredProducts();
+
+  if (!items.length) {
+    grid.innerHTML = '<p class="empty-state">No encontramos productos con ese filtro.</p>';
+    return;
+  }
+
+  grid.innerHTML = items
+    .map(
+      (product) => `
+        <article class="product-card" id="${product.category}">
+          <div class="product-media">
+            <img src="${product.image}" alt="${product.model} ${product.brand}" loading="lazy" />
+          </div>
+          <div class="product-body">
+            <div class="product-meta">
+              <span>${product.brand}</span>
+              <span>${product.model}</span>
+            </div>
+            <span class="category-tag">${product.categoryName}</span>
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <span class="stock ${product.stock > 0 ? "" : "out"}">
+              ${product.stock > 0 ? `${product.stock} disponibles` : "Sin stock"}
+            </span>
+            <div class="price-row">
+              <span class="price">${money(product.price)}</span>
+              <a class="detail-link" href="contacto.html">Solicitar ficha</a>
+            </div>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+if (grid && searchInput) {
+  if (categoryVisuals) {
+    categoryVisuals.innerHTML = categories
+      .map(
+        (category) => `
+          <button class="visual-category" data-category="${category.id}" type="button">
+            <img src="${category.image}" alt="${category.name}" loading="lazy" />
+            <span>${category.name}</span>
+            <small>${category.summary}</small>
+          </button>
+        `
+      )
+      .join("");
+
+    categoryVisuals.querySelectorAll(".visual-category").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeCategory = button.dataset.category;
+        history.replaceState(null, "", `#${activeCategory}`);
+        renderProducts();
+      });
+    });
+  }
+
+  categoryButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeCategory = button.dataset.category;
+      history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `#${activeCategory}`);
+      renderProducts();
+    });
+  });
+
+  searchInput.addEventListener("input", renderProducts);
+  renderProducts();
+}
+
+function showSlide(index) {
+  if (!slides.length) return;
+  activeSlide = (index + slides.length) % slides.length;
+  slides.forEach((slide, slideIndex) => {
+    slide.classList.toggle("active", slideIndex === activeSlide);
+  });
+  document.querySelectorAll(".slider-dot").forEach((dot, dotIndex) => {
+    dot.classList.toggle("active", dotIndex === activeSlide);
+  });
+}
+
+function scheduleSlider() {
+  clearInterval(slideTimer);
+  slideTimer = setInterval(() => showSlide(activeSlide + 1), 6500);
+}
+
+if (slides.length && dotsHost) {
+  dotsHost.innerHTML = Array.from(slides)
+    .map((_, index) => `<button class="slider-dot ${index === 0 ? "active" : ""}" data-slide-dot="${index}" type="button" aria-label="Ir al slide ${index + 1}"></button>`)
+    .join("");
+
+  dotsHost.querySelectorAll(".slider-dot").forEach((dot) => {
+    dot.addEventListener("click", () => {
+      showSlide(Number(dot.dataset.slideDot));
+      scheduleSlider();
+    });
+  });
+
+  nextButton?.addEventListener("click", () => {
+    showSlide(activeSlide + 1);
+    scheduleSlider();
+  });
+
+  prevButton?.addEventListener("click", () => {
+    showSlide(activeSlide - 1);
+    scheduleSlider();
+  });
+
+  scheduleSlider();
+}

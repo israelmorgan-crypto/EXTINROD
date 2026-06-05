@@ -1,0 +1,8 @@
+{
+  "name": "extinrod-web-crm",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check app.js && node --check crm/app.js"
+  }
+}
