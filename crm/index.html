@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex,nofollow,noarchive" />
     <title>CRM EXTINROD</title>
+    <script>
+      if (window.location.protocol === "file:") {
+        window.location.replace("https://extinrod.mx/crm");
+      }
+    </script>
     <link rel="stylesheet" href="styles.css?v=20260605-login-glass" />
     <style>
       [hidden] { display: none !important; }
@@ -154,37 +159,6 @@
 
     <script>
       window.extinrodCrmReady = false;
-      window.extinrodPendingLogin = false;
-      window.loadCrmScript = function (sources) {
-        var status = document.querySelector("#authStatus");
-        var error = document.querySelector("#loginError");
-        var source = sources.shift();
-        var fallbackScript = document.createElement("script");
-
-        if (!source || window.extinrodCrmReady) return;
-        if (status) status.textContent = "Cargando motor del CRM...";
-        fallbackScript.src = source;
-        fallbackScript.onload = function () {
-          if (status && window.extinrodCrmReady) status.textContent = "Motor del CRM cargado. Intenta entrar de nuevo.";
-          if (window.extinrodPendingLogin) {
-            window.setTimeout(function () {
-              document.querySelector("#loginSubmit")?.click();
-            }, 100);
-          }
-        };
-        fallbackScript.onerror = function () {
-          window.loadCrmScript(sources);
-          if (!sources.length && !window.extinrodCrmReady) {
-            if (status) status.textContent = "No se pudo cargar el motor del CRM.";
-            if (error) error.textContent = "El navegador bloqueo app.js. Prueba en Chrome desde https://extinrod.mx/crm.";
-          }
-        };
-        document.body.appendChild(fallbackScript);
-      };
-      window.loadCrmFallback = function () {
-        window.loadCrmScript(["app.js", "https://extinrod.mx/crm/app.js"]);
-      };
-
       document.querySelector("#loginForm")?.addEventListener("submit", function (event) {
         event.preventDefault();
         var status = document.querySelector("#authStatus");
@@ -193,22 +167,17 @@
         if (status) status.textContent = "Procesando acceso...";
         if (error) error.textContent = "";
         if (button) button.textContent = "Validando...";
-        window.extinrodPendingLogin = true;
 
         window.setTimeout(function () {
           if (!window.extinrodCrmReady) {
             if (status) status.textContent = "El formulario respondio, pero no cargo el motor del CRM.";
-            if (error) error.textContent = "Intentando cargar app.js por ruta alterna...";
-            window.loadCrmFallback();
+            if (error) error.textContent = "Abre https://extinrod.mx/crm en Chrome o recarga con Ctrl + F5. No uses la ruta file:/// local.";
             if (button) button.textContent = "Entrar al CRM";
           }
         }, 2500);
       }, { capture: true });
-      window.setTimeout(function () {
-        if (!window.extinrodCrmReady) window.loadCrmFallback();
-      }, 1800);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20260606-auth-remote" onerror="window.loadCrmFallback()"></script>
+    <script src="app.js?v=20260606-no-loop"></script>
   </body>
 </html>

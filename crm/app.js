@@ -78,7 +78,6 @@ const searchInput = document.querySelector("#searchInput");
 const dialog = document.querySelector("#followDialog");
 
 window.extinrodCrmReady = true;
-window.extinrodPendingLogin = false;
 
 window.addEventListener("error", (event) => {
   setAuthError(`Error de carga del CRM: ${event.message}`);
@@ -296,7 +295,6 @@ async function initializeAuth() {
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  window.extinrodPendingLogin = false;
   clearAuthError();
   setAuthMessage("Validando acceso...");
 
