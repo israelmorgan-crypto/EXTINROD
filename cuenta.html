@@ -25,7 +25,7 @@
       <section class="account-access" aria-label="Acceso cliente">
         <div class="access-panel">
           <a class="access-logo" href="index.html" aria-label="EXTINROD"><img src="assets/logo-extinrod.png" alt="EXTINROD" /></a>
-          <p class="access-copy">Utiliza tu correo electrónico para acceder a tus cotizaciones y seguimiento.</p>
+          <p class="access-copy">Accede con Google para guardar listas de materiales, solicitar cotizaciones y dar seguimiento.</p>
 
           <form class="access-form" id="clientLoginForm">
             <label>Correo electrónico
@@ -37,15 +37,13 @@
             <button class="button primary access-submit" type="submit">Acceder</button>
             <button class="button secondary" id="clientShowRegister" type="button">Crear cuenta nueva</button>
           </form>
+          <p class="form-status client-auth-message" id="clientAuthMessage" role="status"></p>
 
           <div class="access-divider"><span>O CONTINUAR CON</span></div>
           <div class="social-access" aria-label="Accesos externos">
             <button type="button" data-oauth-provider="google"><span class="google-mark">G</span> Google</button>
-            <button type="button" data-oauth-provider="facebook"><span class="facebook-mark">f</span> Facebook</button>
-            <button type="button" data-oauth-provider="azure"><span class="microsoft-mark"></span> Microsoft</button>
-            <button type="button" disabled><span class="apple-mark">A</span> Apple</button>
           </div>
-          <p class="access-note">También puedes entrar con tu cuenta empresarial o personal si el proveedor está activo.</p>
+          <p class="access-note">Google es el acceso recomendado. Si creas una cuenta con correo, primero confirma el enlace que recibiras.</p>
 
           <aside class="account-status" id="clientAccountStatus">
             <p class="eyebrow">Estado</p>

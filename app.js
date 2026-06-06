@@ -252,6 +252,7 @@ const clientLoginForm = document.querySelector("#clientLoginForm");
 const clientShowRegister = document.querySelector("#clientShowRegister");
 const clientRegisterPanel = document.querySelector("#clientRegisterPanel");
 const clientAccountStatus = document.querySelector("#clientAccountStatus");
+const clientAuthMessage = document.querySelector("#clientAuthMessage");
 const oauthButtons = document.querySelectorAll("[data-oauth-provider]");
 let browserSupabaseClient;
 
@@ -316,6 +317,7 @@ async function getBrowserSupabaseClient() {
 
 async function startClientOAuth(provider) {
   try {
+    setFormStatus(clientAuthMessage, "Abriendo acceso con Google...", "info");
     const client = await getBrowserSupabaseClient();
     const { error } = await client.auth.signInWithOAuth({
       provider,
@@ -327,7 +329,7 @@ async function startClientOAuth(provider) {
 
     if (error) throw error;
   } catch (error) {
-    alert(error.message || "No se pudo iniciar sesion con este proveedor.");
+    setFormStatus(clientAuthMessage, error.message || "No se pudo iniciar sesion con Google.", "error");
   }
 }
 
@@ -340,7 +342,7 @@ async function handleClientOAuthReturn() {
 
   if (error) {
     window.history.replaceState({}, document.title, window.location.pathname);
-    alert(decodeURIComponent(error));
+    setFormStatus(clientAuthMessage, decodeURIComponent(error), "error");
     return;
   }
 
@@ -351,7 +353,7 @@ async function handleClientOAuthReturn() {
     session = result?.data?.session;
   } catch (error) {
     if (window.location.hash || window.location.search) {
-      alert(error.message || "No se pudo completar el inicio de sesion.");
+      setFormStatus(clientAuthMessage, error.message || "No se pudo completar el inicio de sesion.", "error");
     }
     return;
   }
@@ -360,10 +362,12 @@ async function handleClientOAuthReturn() {
   if (!accessToken) return;
 
   try {
+    setFormStatus(clientAuthMessage, "Validando sesion de cliente...", "info");
     await linkClientSession(accessToken);
     window.history.replaceState({}, document.title, window.location.pathname);
+    setFormStatus(clientAuthMessage, "Sesion iniciada correctamente.", "ok");
   } catch (error) {
-    alert(error.message || "No se pudo completar el inicio de sesion.");
+    setFormStatus(clientAuthMessage, error.message || "No se pudo completar el inicio de sesion.", "error");
   }
 }
 
@@ -1317,6 +1321,7 @@ clientRegisterForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const submitButton = clientRegisterForm.querySelector("button[type='submit']");
   submitButton.disabled = true;
+  setFormStatus(clientAuthMessage, "Creando cuenta y preparando correo de confirmacion...", "info");
 
   try {
     const formData = new FormData(clientRegisterForm);
@@ -1329,15 +1334,15 @@ clientRegisterForm?.addEventListener("submit", async (event) => {
     const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      alert(body.error || "No se pudo crear la cuenta.");
+      setFormStatus(clientAuthMessage, body.error || "No se pudo crear la cuenta.", "error");
       return;
     }
 
-    alert("Cuenta creada. Ahora inicia sesion para cotizar.");
+    setFormStatus(clientAuthMessage, body.message || "Cuenta creada. Revisa tu correo para confirmar el acceso.", "ok");
     clientLoginForm?.querySelector('[name="email"]')?.setAttribute("value", payload.email);
     clientRegisterForm.reset();
   } catch (error) {
-    alert(error.message || "No se pudo crear la cuenta.");
+    setFormStatus(clientAuthMessage, error.message || "No se pudo crear la cuenta.", "error");
   } finally {
     submitButton.disabled = false;
   }
@@ -1347,6 +1352,7 @@ clientLoginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const submitButton = clientLoginForm.querySelector("button[type='submit']");
   submitButton.disabled = true;
+  setFormStatus(clientAuthMessage, "Validando correo y contrasena...", "info");
 
   try {
     const formData = new FormData(clientLoginForm);
@@ -1358,7 +1364,7 @@ clientLoginForm?.addEventListener("submit", async (event) => {
     const body = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      alert(body.error || "No se pudo iniciar sesion.");
+      setFormStatus(clientAuthMessage, body.error || "No se pudo iniciar sesion.", "error");
       return;
     }
 
@@ -1366,8 +1372,9 @@ clientLoginForm?.addEventListener("submit", async (event) => {
     clientLoginForm.reset();
     renderClientStatus();
     loadWishlistFromApi();
+    setFormStatus(clientAuthMessage, "Sesion iniciada correctamente.", "ok");
   } catch (error) {
-    alert(error.message || "No se pudo iniciar sesion.");
+    setFormStatus(clientAuthMessage, error.message || "No se pudo iniciar sesion.", "error");
   } finally {
     submitButton.disabled = false;
   }

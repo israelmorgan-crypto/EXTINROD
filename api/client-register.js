@@ -27,6 +27,32 @@ async function supabaseFetch(path, options = {}) {
   });
 }
 
+async function supabaseSignup(email, password, metadata) {
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+  if (!supabaseUrl || !anonKey) {
+    throw new Error("Falta configuracion publica de Supabase en Vercel.");
+  }
+
+  const signupUrl = new URL(`${supabaseUrl}/auth/v1/signup`);
+  signupUrl.searchParams.set("redirect_to", "https://extinrod.com/cuenta");
+
+  return fetch(signupUrl, {
+    method: "POST",
+    headers: {
+      apikey: anonKey,
+      Authorization: `Bearer ${anonKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      password,
+      data: metadata,
+    }),
+  });
+}
+
 module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -49,20 +75,11 @@ module.exports = async function handler(request, response) {
       return;
     }
 
-    const userResponse = await supabaseFetch("/auth/v1/admin/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email,
-        password,
-        email_confirm: true,
-        user_metadata: {
-          full_name: contactName,
-          company_name: companyName,
-          phone,
-          role: "client",
-        },
-      }),
+    const userResponse = await supabaseSignup(email, password, {
+      full_name: contactName,
+      company_name: companyName,
+      phone,
+      role: "client",
     });
     const userBody = await readJson(userResponse);
 
@@ -102,7 +119,7 @@ module.exports = async function handler(request, response) {
     response.status(200).json({
       ok: true,
       customer: Array.isArray(customers) ? customers[0] : customers,
-      message: "Cuenta creada. Ya puedes iniciar sesion.",
+      message: "Cuenta creada. Revisa tu correo y confirma tu cuenta antes de iniciar sesion.",
     });
   } catch (error) {
     response.status(500).json({ error: error.message || "No se pudo registrar el cliente." });
