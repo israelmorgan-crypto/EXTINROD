@@ -183,6 +183,48 @@ async function loadEmployeeProfile() {
   sessionLabel.textContent = `${data.full_name} - ${data.role}`;
 }
 
+async function linkEmployeeProfile() {
+  const { data } = await supabaseClient.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) throw new Error("No se encontro una sesion activa.");
+
+  const response = await fetch("/api/link-employee", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(body.error || "No se pudo vincular el usuario con el CRM.");
+  }
+}
+
+async function loadAuthorizedEmployee() {
+  try {
+    await loadEmployeeProfile();
+  } catch (error) {
+    await linkEmployeeProfile();
+    await loadEmployeeProfile();
+  }
+}
+
+function friendlyAuthError(error) {
+  const message = (error?.message || "").toLowerCase();
+  if (message.includes("invalid login credentials")) {
+    return "Correo o contrasena incorrectos. Revisa que el usuario exista en Supabase Auth.";
+  }
+  if (message.includes("email not confirmed")) {
+    return "El correo existe, pero falta confirmarlo en Supabase Auth o desactivar la confirmacion por correo.";
+  }
+  if (message.includes("too many")) {
+    return "Hubo demasiados intentos. Espera unos minutos e intenta de nuevo.";
+  }
+  return error?.message || "No se pudo iniciar sesion.";
+}
+
 async function initializeAuth() {
   setLockedState(false);
   clearDashboard();
@@ -211,7 +253,7 @@ async function initializeAuth() {
     );
 
     if (data.session) {
-      await loadEmployeeProfile();
+      await loadAuthorizedEmployee();
       renderAll();
       setLockedState(true);
       setAuthMessage("Acceso autorizado.", "ok");
@@ -249,12 +291,13 @@ loginForm.addEventListener("submit", async (event) => {
     );
 
     if (error) {
-      setAuthError(error.message || "Correo o contrasena incorrectos.");
+      setAuthError(friendlyAuthError(error));
       setAuthMessage("No se pudo iniciar sesion.");
       return;
     }
 
-    await loadEmployeeProfile();
+    setAuthMessage("Vinculando perfil interno...");
+    await loadAuthorizedEmployee();
     renderAll();
     loginPassword.value = "";
     setAuthMessage("Acceso autorizado.", "ok");
