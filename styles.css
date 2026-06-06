@@ -60,6 +60,14 @@ a {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.account-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .login-link {
   display: inline-flex;
   align-items: center;
@@ -75,6 +83,44 @@ a {
   width: 18px;
   height: 18px;
   stroke-width: 2.4;
+}
+
+.mini-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 0 8px;
+  border: 1px solid rgba(36, 87, 109, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--steel);
+  font-size: 0.78rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.mini-action svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 2.3;
+}
+
+.mini-action strong {
+  min-width: 20px;
+  min-height: 20px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--red);
+  color: var(--white);
+  font-size: 0.7rem;
+}
+
+.mini-action:hover {
+  border-color: rgba(181, 31, 43, 0.28);
+  color: var(--red);
 }
 
 .brand {
@@ -775,13 +821,6 @@ h3 {
   color: var(--muted);
   font-size: 0.94rem;
   font-weight: 800;
-}
-
-.commerce-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
 }
 
 .cart-button {
@@ -1979,6 +2018,10 @@ h3 {
     justify-content: flex-start;
   }
 
+  .account-actions {
+    justify-content: flex-start;
+  }
+
   .main-nav {
     flex-wrap: wrap;
   }
@@ -1991,15 +2034,6 @@ h3 {
   .cart-button {
     width: 100%;
     justify-content: center;
-  }
-
-  .commerce-actions {
-    width: 100%;
-    justify-content: stretch;
-  }
-
-  .commerce-actions .cart-button {
-    flex: 1 1 160px;
   }
 
   .catalog-filters {
@@ -2147,6 +2181,15 @@ h3 {
 @media (max-width: 560px) {
   .account-bar {
     justify-content: center;
+  }
+
+  .account-actions {
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .mini-action span {
+    display: none;
   }
 
   .access-panel {

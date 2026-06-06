@@ -8,7 +8,19 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="account-bar"><a class="login-link" href="https://extinrod.com/cuenta" aria-label="Iniciar Sesión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg><span>Iniciar Sesión</span></a></div>
+      <div class="account-bar">
+        <div class="account-actions">
+          <button class="mini-action" type="button" data-open-wishlist aria-label="Abrir lista de materiales">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg>
+            <span>Lista</span><strong id="wishlistCount">0</strong>
+          </button>
+          <button class="mini-action" type="button" data-open-cart aria-label="Abrir cotizacion">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h8.78a2 2 0 0 0 1.95-1.57l1.35-6.43H5.12"/></svg>
+            <span>Cotizacion</span><strong id="cartCount">0</strong>
+          </button>
+          <a class="login-link" href="https://extinrod.com/cuenta" aria-label="Iniciar Sesion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg><span>Iniciar Sesion</span></a>
+        </div>
+      </div>
       <div class="topbar-main">
         <a class="brand" href="index.html"><img src="assets/logo-extinrod.png" alt="EXTINROD" /></a>
         <nav class="main-nav" aria-label="Principal">
@@ -43,14 +55,6 @@
               <p class="eyebrow">E-commerce asistido</p>
               <h2>Productos para integrar a tu cotizacion</h2>
               <p class="catalog-count" id="catalogCount">Cargando destacados Syscom...</p>
-            </div>
-            <div class="commerce-actions">
-              <button class="cart-button secondary-cart" type="button" data-open-wishlist>
-                Lista <span id="wishlistCount">0</span>
-              </button>
-              <button class="cart-button" type="button" data-open-cart>
-                Cotizacion <span id="cartCount">0</span>
-              </button>
             </div>
           </div>
           <div class="catalog-filters">

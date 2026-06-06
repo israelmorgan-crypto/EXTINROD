@@ -398,6 +398,20 @@ const prevButton = document.querySelector("[data-slide-prev]");
 let activeSlide = 0;
 let slideTimer;
 
+document.querySelectorAll("[data-open-cart]").forEach((button) => {
+  button.addEventListener("click", () => {
+    quoteDrawer?.classList.add("open");
+    quoteDrawer?.setAttribute("aria-hidden", "false");
+  });
+});
+
+document.querySelectorAll("[data-open-wishlist]").forEach((button) => {
+  button.addEventListener("click", () => {
+    wishlistDrawer?.classList.add("open");
+    wishlistDrawer?.setAttribute("aria-hidden", "false");
+  });
+});
+
 function money(value) {
   if (!Number.isFinite(Number(value))) return "Por cotizar";
 
