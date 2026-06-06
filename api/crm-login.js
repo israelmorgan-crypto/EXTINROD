@@ -23,6 +23,17 @@ function friendlyAuthError(body) {
   return body?.error_description || body?.message || "No se pudo iniciar sesion.";
 }
 
+function getJwtRole(token) {
+  try {
+    const payload = token.split(".")[1];
+    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = Buffer.from(normalized, "base64").toString("utf8");
+    return JSON.parse(decoded).role || "";
+  } catch {
+    return "";
+  }
+}
+
 module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -33,11 +44,19 @@ module.exports = async function handler(request, response) {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  const serviceRoleClaim = getJwtRole(serviceRoleKey);
 
   response.setHeader("Cache-Control", "no-store");
 
   if (!supabaseUrl || !anonKey || !serviceRoleKey) {
     response.status(500).json({ error: "Falta configuracion de Supabase en Vercel." });
+    return;
+  }
+
+  if (serviceRoleClaim && serviceRoleClaim !== "service_role") {
+    response.status(500).json({
+      error: "SUPABASE_SERVICE_ROLE_KEY no contiene la llave service_role. Revisa que no hayas pegado la anon key.",
+    });
     return;
   }
 
@@ -86,7 +105,9 @@ module.exports = async function handler(request, response) {
 
     const employee = Array.isArray(employees) ? employees[0] : undefined;
     if (!employee || !employee.active) {
-      response.status(403).json({ error: "Este correo no esta autorizado en el CRM." });
+      response.status(403).json({
+        error: `El correo ${email} inicio sesion, pero no aparece como empleado activo para el servidor.`,
+      });
       return;
     }
 
