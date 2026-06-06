@@ -15,7 +15,7 @@
           <a href="index.html">Home</a>
           <a href="nosotros.html">Nosotros</a>
           <div class="nav-menu"><a href="servicios.html">Servicios</a><div class="submenu"><a href="servicios.html#ingenierias">Ingenierias</a><a href="servicios.html#tramites">Gestion de tramites</a><a href="servicios.html#mantenimientos">Mantenimientos</a><a href="servicios.html#construccion">Construccion y remodelacion</a></div></div>
-          <div class="nav-menu"><a class="active" href="productos.html">Productos</a><div class="submenu"><a href="#incendios">Incendios</a><a href="#voceo">Voceo</a><a href="#data">Data</a><a href="#climas">Climas</a><a href="#videovigilancia">Video vigilancia</a><a href="#accesos">Control de accesos</a></div></div>
+          <div class="nav-menu"><a class="active" href="productos.html">Productos</a><div class="submenu"><a href="productos.html?categoria=incendios">Incendios</a><a href="productos.html?categoria=voceo">Voceo</a><a href="productos.html?categoria=data">Data</a><a href="productos.html?categoria=climas">Climas</a><a href="productos.html?categoria=videovigilancia">Video vigilancia</a><a href="productos.html?categoria=accesos">Control de accesos</a></div></div>
           <a href="contacto.html">Contacto</a>
         </nav>
       </div>
@@ -24,11 +24,10 @@
     <main>
       <section class="page-hero">
         <p class="eyebrow">Productos</p>
-        <h1>Catalogo para cotizacion tecnica.</h1>
+        <h1>Catalogo por soluciones.</h1>
         <p>
-          Selecciona equipos por familia, arma tu solicitud y nuestro equipo
-          valida compatibilidad, disponibilidad y precio vigente antes de
-          enviarte la propuesta formal.
+          Navega por categorias destacadas, filtra productos por familia y
+          revisa fichas tecnicas antes de armar tu solicitud de cotizacion.
         </p>
       </section>
 
@@ -53,7 +52,6 @@
               </button>
             </div>
           </div>
-          <div id="categoryVisuals" class="category-visuals"></div>
           <div class="catalog-filters">
             <label class="search-box">
               <span>Buscar producto</span>
@@ -112,7 +110,7 @@
               <p class="eyebrow">Solicitud</p>
               <h2>Productos seleccionados</h2>
             </div>
-            <button class="icon-close" type="button" data-close-cart aria-label="Cerrar">×</button>
+            <button class="icon-close" type="button" data-close-cart aria-label="Cerrar">&times;</button>
           </div>
           <div id="cartItems" class="cart-items"></div>
           <form class="quote-form" id="quoteRequestForm">

@@ -185,6 +185,7 @@ let categories = [
 ];
 
 const grid = document.querySelector("#productGrid");
+const productDetail = document.querySelector("#productDetail");
 const searchInput = document.querySelector("#searchInput");
 const brandFilter = document.querySelector("#brandFilter");
 const categoryNav = document.querySelector("#categoryNav");
@@ -203,7 +204,8 @@ const quoteWhatsApp = document.querySelector("#quoteWhatsApp");
 const quoteRequestForm = document.querySelector("#quoteRequestForm");
 const quoteMessage = document.querySelector("#quoteMessage");
 const quoteStatus = document.querySelector("#quoteStatus");
-let activeCategory = location.hash ? location.hash.slice(1) : "all";
+const productPageParams = new URLSearchParams(window.location.search);
+let activeCategory = productPageParams.get("categoria") || (location.hash ? location.hash.slice(1) : "all");
 let activeBrand = "all";
 let activeSubcategory = "all";
 let visibleProductLimit = 12;
@@ -482,11 +484,11 @@ function subcategoryOptions() {
 }
 
 function shouldShowProducts() {
-  return activeCategory !== "all" || activeBrand !== "all" || searchInput.value.trim() !== "";
+  return activeCategory !== "all" || activeBrand !== "all" || (searchInput?.value.trim() || "") !== "";
 }
 
 function filteredProducts() {
-  const query = searchInput.value.trim();
+  const query = searchInput?.value.trim() || "";
   return products.filter((product) => {
     const matchesCategory = activeCategory === "all" || product.category === activeCategory;
     const matchesBrand = activeBrand === "all" || product.brand === activeBrand;
@@ -542,43 +544,41 @@ function renderSubcategoryNav() {
 }
 
 function renderCatalogLanding() {
+  if (!grid) return;
   const total = products.length;
+  const brandNames = [...new Set(products.map((product) => product.brand).filter(Boolean))].slice(0, 18);
   const categoryCards = categories
     .map((category) => {
       const count = products.filter((product) => product.category === category.id).length;
       return `
-        <button class="catalog-family-card" data-category="${category.id}" type="button">
+        <a class="catalog-family-card" href="productos.html?categoria=${category.id}">
           <img src="${category.image || "assets/logo-extinrod.png"}" alt="${category.name}" loading="lazy" />
           <span>${category.name}</span>
-          <small>${category.summary}</small>
-          <strong>${count} destacados</strong>
-        </button>
+          <strong>${count} productos</strong>
+        </a>
       `;
     })
     .join("");
+  const brandList = brandNames.map((brand) => `<span>${brand}</span>`).join("");
 
   grid.innerHTML = `
-    <section class="catalog-landing">
+    <section class="catalog-landing featured-catalog">
       <div class="catalog-landing-copy">
-        <p class="eyebrow">Catalogo por familias</p>
-        <h3>Elige una division para ver productos destacados.</h3>
-        <p>Organizamos el catalogo por soluciones para que la pagina cargue mas ligero y el cliente llegue rapido a lo que necesita cotizar.</p>
-        <div class="catalog-summary">
-          <span>${categories.length} familias</span>
-          <span>${total} productos indexados</span>
-          <span>Precio visible al cotizar</span>
-        </div>
+        <p class="eyebrow">Categorias destacadas</p>
+        <h3>Selecciona una categoria para abrir su listado de productos.</h3>
+        <p>${total} productos indexados para cotizacion tecnica. Los precios se validan al iniciar sesion y solicitar propuesta.</p>
       </div>
       <div class="catalog-family-grid">${categoryCards}</div>
+      <div class="featured-brands">
+        <h3>Marcas destacadas</h3>
+        <div>${brandList}</div>
+      </div>
     </section>
   `;
-
-  grid.querySelectorAll(".catalog-family-card").forEach((button) => {
-    button.addEventListener("click", () => selectCategory(button.dataset.category));
-  });
 }
 
 function renderProducts() {
+  if (!grid) return;
   syncButtons();
   renderSubcategoryNav();
 
@@ -611,10 +611,10 @@ function renderProducts() {
         const encodedCode = encodeURIComponent(code);
         const saved = isWishlisted(product);
         return `
-        <article class="product-card" id="${product.category}">
-          <div class="product-media">
+        <article class="product-card product-list-card" id="${product.category}">
+          <a class="product-media" href="producto.html?sku=${encodedCode}">
             <img src="${product.image}" alt="${product.model} ${product.brand}" loading="lazy" />
-          </div>
+          </a>
           <div class="product-body">
             <div class="product-meta">
               <span>${product.brand}</span>
@@ -630,6 +630,7 @@ function renderProducts() {
               <span class="price">Precio al cotizar</span>
               <div class="product-actions">
                 <button class="save-link ${saved ? "saved" : ""}" type="button" data-wishlist-product="${encodedCode}">${saved ? "Guardado" : "Guardar"}</button>
+                <a class="detail-link ghost-link" href="producto.html?sku=${encodedCode}">Ver ficha</a>
                 <button class="detail-link" type="button" data-add-product="${encodedCode}">Agregar</button>
               </div>
             </div>
@@ -654,9 +655,9 @@ function persistCart() {
 }
 
 function updateCart() {
-  if (!cartCount || !cartItems || !quoteWhatsApp) return;
+  if (!cartItems || !quoteWhatsApp) return;
   const totalItems = quoteCart.reduce((sum, item) => sum + item.qty, 0);
-  cartCount.textContent = totalItems;
+  if (cartCount) cartCount.textContent = totalItems;
 
   if (!quoteCart.length) {
     cartItems.innerHTML = '<p class="empty-state">Aun no agregas productos.</p>';
@@ -746,7 +747,7 @@ function selectCategory(categoryId) {
   activeCategory = categoryId;
   activeSubcategory = "all";
   visibleProductLimit = 12;
-  history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `#${activeCategory}`);
+  history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `productos.html?categoria=${activeCategory}`);
   renderProducts();
 }
 
@@ -770,7 +771,7 @@ function renderFooterProductNav() {
 
   footerProductNav.innerHTML = [
     "<h3>Productos</h3>",
-    ...categories.map((category) => `<a href="#${category.id}">${category.name}</a>`),
+    ...categories.map((category) => `<a href="productos.html?categoria=${category.id}">${category.name}</a>`),
   ].join("");
 }
 
@@ -941,6 +942,108 @@ function wishlistToCart() {
   quoteDrawer?.setAttribute("aria-hidden", "false");
 }
 
+function productSpecs(product) {
+  return [
+    ["Modelo", product.model],
+    ["Marca", product.brand],
+    ["Categoria", product.categoryName],
+    ["Disponibilidad", product.stock > 0 ? `${product.stock} piezas` : "Por confirmar"],
+    ["Fuente", product.source === "syscom" ? "Catalogo Syscom" : "Catalogo EXTINROD"],
+  ];
+}
+
+function renderRelatedProducts(currentProduct) {
+  return products
+    .filter((product) => product.category === currentProduct.category && productCode(product) !== productCode(currentProduct))
+    .slice(0, 8)
+    .map((product) => {
+      const code = encodeURIComponent(productCode(product));
+      return `
+        <a class="related-product" href="producto.html?sku=${code}">
+          <img src="${product.image || "assets/logo-extinrod.png"}" alt="${product.model}" loading="lazy" />
+          <span>${product.brand}</span>
+          <strong>${product.model}</strong>
+          <small>Precio al cotizar</small>
+        </a>
+      `;
+    })
+    .join("");
+}
+
+function renderProductDetail() {
+  if (!productDetail) return;
+
+  const params = new URLSearchParams(window.location.search);
+  const sku = decodeProductCode(params.get("sku") || params.get("modelo") || "");
+  const product = productByCode(sku);
+
+  if (!product) {
+    productDetail.innerHTML = `
+      <div class="product-detail-empty">
+        <p class="eyebrow">Producto</p>
+        <h1>No encontramos esta ficha.</h1>
+        <p>Regresa al catalogo para seleccionar un producto disponible.</p>
+        <a class="button primary" href="productos.html">Ver categorias</a>
+      </div>
+    `;
+    return;
+  }
+
+  const code = encodeURIComponent(productCode(product));
+  const related = renderRelatedProducts(product);
+  const specs = productSpecs(product)
+    .map(([label, value]) => `<div><dt>${label}</dt><dd>${value || "Por confirmar"}</dd></div>`)
+    .join("");
+
+  productDetail.innerHTML = `
+    <nav class="product-breadcrumb" aria-label="Ruta">
+      <a href="productos.html">Productos</a>
+      <span>/</span>
+      <a href="productos.html?categoria=${product.category}">${product.categoryName}</a>
+      <span>/</span>
+      <strong>${product.model}</strong>
+    </nav>
+    <section class="product-detail-hero">
+      <div class="product-gallery">
+        <img src="${product.image || "assets/logo-extinrod.png"}" alt="${product.name}" />
+        <div>
+          <button type="button" class="gallery-thumb active"><img src="${product.image || "assets/logo-extinrod.png"}" alt="${product.model}" /></button>
+          <button type="button" class="gallery-thumb"><img src="${product.image || "assets/logo-extinrod.png"}" alt="${product.brand}" /></button>
+        </div>
+      </div>
+      <div class="product-detail-copy">
+        <p class="eyebrow">${product.brand}</p>
+        <h1>${product.name}</h1>
+        <p>${product.description || "Producto disponible para integracion y cotizacion tecnica EXTINROD."}</p>
+        <div class="detail-badges">
+          <span>${product.model}</span>
+          <span>${product.categoryName}</span>
+          <span>${product.stock > 0 ? "Disponible" : "Por confirmar"}</span>
+        </div>
+      </div>
+      <aside class="product-quote-panel">
+        <span class="category-tag">${product.source === "syscom" ? "Syscom" : "EXTINROD"}</span>
+        <h2>Precio al cotizar</h2>
+        <p>Inicia sesion y solicita la propuesta para validar precio de lista, existencia y compatibilidad.</p>
+        <button class="button primary" type="button" data-add-product="${code}">Agregar a cotizacion</button>
+        <button class="button secondary" type="button" data-wishlist-product="${code}">Guardar en lista</button>
+      </aside>
+    </section>
+    <section class="product-detail-section">
+      <h2>Descripcion</h2>
+      <p>${product.description || "Solucion seleccionada para proyectos de seguridad, infraestructura y mantenimiento."}</p>
+    </section>
+    <section class="product-detail-section">
+      <h2>Especificaciones</h2>
+      <dl class="spec-grid">${specs}</dl>
+    </section>
+    <section class="product-detail-section">
+      <h2>Productos relacionados</h2>
+      <div class="related-grid">${related || '<p class="empty-state">No hay relacionados cargados para esta categoria.</p>'}</div>
+    </section>
+  `;
+}
+
 async function loadProductsFromApi() {
   try {
     const session = getClientSession();
@@ -961,10 +1064,12 @@ async function loadProductsFromApi() {
     }
     renderBrandFilter();
     renderProducts();
+    renderProductDetail();
     updateCart();
     loadWishlistFromApi();
   } catch {
     renderProducts();
+    renderProductDetail();
   }
 }
 
@@ -1081,6 +1186,102 @@ if (grid && searchInput) {
 
   renderProducts();
   renderBrandFilter();
+  updateCart();
+  updateWishlist();
+  loadProductsFromApi();
+}
+
+if (productDetail && !grid) {
+  productDetail.addEventListener("click", (event) => {
+    const addButton = event.target.closest("[data-add-product]");
+    const wishlistButton = event.target.closest("[data-wishlist-product]");
+    if (addButton) addToCart(addButton.dataset.addProduct);
+    if (wishlistButton) toggleWishlist(wishlistButton.dataset.wishlistProduct);
+  });
+
+  cartItems?.addEventListener("click", (event) => {
+    const inc = event.target.closest("[data-inc-product]");
+    const dec = event.target.closest("[data-dec-product]");
+    if (inc) changeCartQty(inc.dataset.incProduct, 1);
+    if (dec) changeCartQty(dec.dataset.decProduct, -1);
+  });
+
+  document.querySelector("[data-close-cart]")?.addEventListener("click", () => {
+    quoteDrawer?.classList.remove("open");
+    quoteDrawer?.setAttribute("aria-hidden", "true");
+  });
+
+  document.querySelector("[data-close-wishlist]")?.addEventListener("click", () => {
+    wishlistDrawer?.classList.remove("open");
+    wishlistDrawer?.setAttribute("aria-hidden", "true");
+  });
+
+  wishlistItems?.addEventListener("click", async (event) => {
+    const removeButton = event.target.closest("[data-remove-wishlist]");
+    if (!removeButton) return;
+    const sku = decodeProductCode(removeButton.dataset.removeWishlist);
+    wishlist = wishlist.filter((item) => String(item.sku || item.model) !== sku);
+    persistWishlist();
+    updateWishlist();
+    renderProductDetail();
+    await syncWishlistItem("DELETE", { sku });
+  });
+
+  document.querySelector("[data-wishlist-to-cart]")?.addEventListener("click", wishlistToCart);
+
+  quoteRequestForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const session = getClientSession();
+
+    if (!session?.access_token) {
+      setFormStatus(quoteStatus, "Inicia sesion o crea tu cuenta para generar la cotizacion.", "error");
+      window.setTimeout(() => {
+        window.location.href = "https://extinrod.com/cuenta";
+      }, 900);
+      return;
+    }
+
+    if (!quoteCart.length && !quoteMessage?.value.trim()) {
+      setFormStatus(quoteStatus, "Agrega productos o describe que necesitas cotizar.", "error");
+      return;
+    }
+
+    const submitButton = quoteRequestForm.querySelector("button[type='submit']");
+    submitButton.disabled = true;
+    setFormStatus(quoteStatus, "Guardando solicitud en CRM...");
+
+    try {
+      const response = await fetch("/api/quote-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          items: quoteCart,
+          message: quoteMessage?.value.trim() || "",
+        }),
+      });
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setFormStatus(quoteStatus, body.error || "No se pudo generar la cotizacion.", "error");
+        return;
+      }
+
+      quoteCart = [];
+      persistCart();
+      updateCart();
+      if (quoteMessage) quoteMessage.value = "";
+      setFormStatus(quoteStatus, "Solicitud enviada. Ya aparece en el CRM para seguimiento.", "ok");
+    } catch (error) {
+      setFormStatus(quoteStatus, error.message || "No se pudo enviar la solicitud.", "error");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
+  renderProductDetail();
   updateCart();
   updateWishlist();
   loadProductsFromApi();
