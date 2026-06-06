@@ -143,6 +143,14 @@ function numberOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+function normalizeName(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "");
+}
+
 function getProductId(product) {
   return product.producto_id || product.id || product.product_id || product.codigo || product.sku || product.modelo;
 }
@@ -291,6 +299,54 @@ async function runInBatches(items, batchSize, worker) {
   return results;
 }
 
+function findSyscomBrand(brandName, syscomBrands) {
+  const normalizedBrand = normalizeName(brandName);
+  if (!normalizedBrand) return null;
+
+  return (
+    syscomBrands.find((brand) => normalizeName(brand.nombre) === normalizedBrand) ||
+    syscomBrands.find((brand) => normalizeName(brand.nombre).includes(normalizedBrand)) ||
+    syscomBrands.find((brand) => normalizedBrand.includes(normalizeName(brand.nombre)))
+  );
+}
+
+async function getSyscomBrandLogos(token, products) {
+  const brandNames = [...new Set(products.map((product) => product.brand).filter(Boolean))].slice(0, 18);
+  if (!brandNames.length) return [];
+
+  const brandsPayload = await syscomFetch("/marcas", token);
+  const syscomBrands = asArray(brandsPayload);
+  const matchedBrands = brandNames
+    .map((brandName) => {
+      const match = findSyscomBrand(brandName, syscomBrands);
+      return match ? { requestedName: brandName, id: match.id, name: match.nombre || brandName } : null;
+    })
+    .filter(Boolean);
+
+  const details = await runInBatches(matchedBrands, 6, async (brand) => {
+    try {
+      const detail = await syscomFetch(`/marcas/${encodeURIComponent(brand.id)}`, token);
+      return {
+        id: String(brand.id),
+        name: detail.titulo || detail.nombre || brand.name,
+        requestedName: brand.requestedName,
+        logo: detail.logo || detail.marca_logo || "",
+        description: detail.descripcion || "",
+      };
+    } catch {
+      return {
+        id: String(brand.id),
+        name: brand.name,
+        requestedName: brand.requestedName,
+        logo: "",
+        description: "",
+      };
+    }
+  });
+
+  return details.filter((brand) => brand.logo);
+}
+
 async function getSyscomTopSellerProducts(token, includePrices, maxProducts, exchangeRate) {
   const seen = new Set();
   const products = [];
@@ -397,11 +453,13 @@ module.exports = async function handler(request, response) {
     const includePrices = Boolean(user);
     let source = "local-seed";
     let products;
+    let brands = [];
 
     if (hasSyscomCredentials) {
       try {
         const syscomToken = await getSyscomAccessToken();
         products = await getSyscomProducts(syscomToken, includePrices, maxProducts);
+        brands = await getSyscomBrandLogos(syscomToken, products);
         source = "syscom";
       } catch (error) {
         const catalog = readLocalCatalog();
@@ -427,6 +485,7 @@ module.exports = async function handler(request, response) {
       pricesVisible: includePrices,
       updatedAt: new Date().toISOString(),
       categories,
+      brands,
       products,
     });
   } catch (error) {

@@ -206,12 +206,13 @@ const quoteMessage = document.querySelector("#quoteMessage");
 const quoteStatus = document.querySelector("#quoteStatus");
 const productPageParams = new URLSearchParams(window.location.search);
 let activeCategory = productPageParams.get("categoria") || (location.hash ? location.hash.slice(1) : "all");
-let activeBrand = "all";
+let activeBrand = productPageParams.get("marca") || "all";
 let activeSubcategory = "all";
 let visibleProductLimit = 12;
 let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
 let wishlist = JSON.parse(localStorage.getItem("extinrod_wishlist") || "[]");
 let catalogPricesVisible = false;
+let featuredBrands = [];
 
 const SUBCATEGORY_RULES = {
   incendios: [
@@ -559,7 +560,19 @@ function renderCatalogLanding() {
       `;
     })
     .join("");
-  const brandList = brandNames.map((brand) => `<span>${brand}</span>`).join("");
+  const brandList = featuredBrands.length
+    ? featuredBrands
+        .slice(0, 18)
+        .map(
+          (brand) => `
+            <a class="brand-logo-card" href="productos?marca=${encodeURIComponent(brand.requestedName || brand.name)}" data-brand-link="${brand.requestedName || brand.name}">
+              <img src="${brand.logo}" alt="${brand.name}" loading="lazy" />
+              <span>${brand.name}</span>
+            </a>
+          `
+        )
+        .join("")
+    : brandNames.map((brand) => `<span>${brand}</span>`).join("");
 
   grid.innerHTML = `
     <section class="catalog-landing featured-catalog">
@@ -569,12 +582,25 @@ function renderCatalogLanding() {
         <p>${total} productos indexados para cotizacion tecnica. Los precios se validan al iniciar sesion y solicitar propuesta.</p>
       </div>
       <div class="catalog-family-grid">${categoryCards}</div>
-      <div class="featured-brands">
+      <div class="featured-brands ${featuredBrands.length ? "with-logos" : ""}">
         <h3>Marcas destacadas</h3>
         <div>${brandList}</div>
       </div>
     </section>
   `;
+
+  grid.querySelectorAll("[data-brand-link]").forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      activeBrand = link.dataset.brandLink;
+      activeCategory = "all";
+      activeSubcategory = "all";
+      visibleProductLimit = 12;
+      if (brandFilter) brandFilter.value = activeBrand;
+      history.replaceState(null, "", `productos?marca=${encodeURIComponent(activeBrand)}`);
+      renderProducts();
+    });
+  });
 }
 
 function renderProducts() {
@@ -1058,6 +1084,7 @@ async function loadProductsFromApi() {
 
     products = catalog.products;
     catalogPricesVisible = Boolean(catalog.pricesVisible);
+    featuredBrands = Array.isArray(catalog.brands) ? catalog.brands : [];
     if (Array.isArray(catalog.categories) && catalog.categories.length) {
       categories = catalog.categories;
       renderCategorySurfaces();

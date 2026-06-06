@@ -1030,6 +1030,43 @@ h3 {
   text-transform: uppercase;
 }
 
+.featured-brands.with-logos div {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.brand-logo-card {
+  min-height: 82px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(222, 217, 207, 0.82);
+  border-radius: 8px;
+  background: var(--white);
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.brand-logo-card:hover {
+  border-color: rgba(36, 87, 109, 0.28);
+  box-shadow: 0 12px 26px rgba(23, 23, 23, 0.08);
+  transform: translateY(-2px);
+}
+
+.brand-logo-card img {
+  max-width: 112px;
+  max-height: 34px;
+  object-fit: contain;
+}
+
+.brand-logo-card span {
+  color: var(--steel);
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
 .load-more-products {
   grid-column: 1 / -1;
   min-height: 46px;
