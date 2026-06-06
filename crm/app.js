@@ -4,21 +4,21 @@ const seedCustomers = [
     contacto: "Laura Mendoza",
     servicio: "Deteccion y alarma",
     estado: "Cotizacion",
-    responsable: "Israel",
+    responsable: "G. Rodriguez",
   },
   {
     cliente: "Colegio del Valle",
     contacto: "Mario Rivas",
     servicio: "Programa interno",
     estado: "Seguimiento",
-    responsable: "Guadalupe",
+    responsable: "A. Rodriguez",
   },
   {
     cliente: "Plaza Reforma",
     contacto: "Ana Torres",
     servicio: "Mantenimiento extintores",
     estado: "Activo",
-    responsable: "Carlos",
+    responsable: "Taller",
   },
 ];
 
@@ -34,9 +34,9 @@ const seedQuotes = [
 ];
 
 const seedTasks = [
-  { tarea: "Registrar visita tecnica", empleado: "Israel", estado: "Pendiente" },
-  { tarea: "Actualizar expediente Proteccion Civil", empleado: "Guadalupe", estado: "En proceso" },
-  { tarea: "Validar stock de detectores", empleado: "Carlos", estado: "Pendiente" },
+  { tarea: "Registrar visita tecnica", empleado: "Israel Morgan", estado: "Pendiente" },
+  { tarea: "Actualizar expediente Proteccion Civil", empleado: "A. Rodriguez", estado: "En proceso" },
+  { tarea: "Validar stock de detectores", empleado: "Taller", estado: "Pendiente" },
 ];
 
 const authConfig = {

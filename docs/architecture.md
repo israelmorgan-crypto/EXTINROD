@@ -35,11 +35,17 @@ Construir una plataforma propia para EXTINROD con cuatro piezas separadas:
 ## Siguientes pasos
 
 1. Crear proyecto Supabase y ejecutar `supabase/schema.sql`.
-2. Configurar variables en Vercel:
+2. Ejecutar `supabase/seed.sql` para cargar el equipo inicial:
+   - `contacto@extinrod.mx` como recepcion comercial.
+   - `israel.morgan@extinrod.mx` como administrador.
+   - `g.rodriguez@extinrod.mx` como ventas.
+   - `a.rodriguez@extinrod.mx` como asesor.
+   - `taller@extinrod.mx` como operaciones.
+3. Configurar variables en Vercel:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `SYSCOM_API_TOKEN`
-3. Reemplazar el login temporal del CRM por Supabase Auth.
-4. Crear endpoint para guardar solicitudes de cotizacion.
-5. Crear sincronizador de productos Syscom hacia Supabase.
+4. Reemplazar el login temporal del CRM por Supabase Auth.
+5. Crear endpoint para guardar solicitudes de cotizacion.
+6. Crear sincronizador de productos Syscom hacia Supabase.
