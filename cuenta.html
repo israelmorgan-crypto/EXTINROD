@@ -8,7 +8,7 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="account-bar"><a class="login-link active" href="cuenta.html" aria-label="Iniciar sesion o registrarse"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg><span>Iniciar sesion o registrarse</span></a></div>
+      <div class="account-bar"><a class="login-link active" href="https://extinrod.com/cuenta" aria-label="Iniciar Sesión"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg><span>Iniciar Sesión</span></a></div>
       <div class="topbar-main">
         <a class="brand" href="index.html"><img src="assets/logo-extinrod.png" alt="EXTINROD" /></a>
         <nav class="main-nav" aria-label="Principal">
@@ -21,40 +21,59 @@
       </div>
     </header>
 
-    <main>
-      <section class="page-hero account-hero">
-        <p class="eyebrow">Portal cliente</p>
-        <h1>Registra tu cuenta y solicita cotizaciones.</h1>
-        <p>Tu solicitud queda guardada para que el equipo EXTINROD pueda dar seguimiento desde el CRM.</p>
-      </section>
+    <main class="account-page">
+      <section class="account-access" aria-label="Acceso cliente">
+        <div class="access-panel">
+          <a class="access-logo" href="index.html" aria-label="EXTINROD"><img src="assets/logo-extinrod.png" alt="EXTINROD" /></a>
+          <p class="access-copy">Utiliza tu correo electrónico para acceder a tus cotizaciones y seguimiento.</p>
 
-      <section class="account-layout">
-        <form class="account-card" id="clientRegisterForm">
-          <p class="eyebrow">Nuevo cliente</p>
-          <h2>Crear cuenta</h2>
-          <label>Nombre de contacto<input name="contact_name" required /></label>
-          <label>Empresa<input name="company_name" required /></label>
-          <label>Telefono<input name="phone" type="tel" /></label>
-          <label>Correo<input name="email" type="email" required /></label>
-          <label>Contrasena<input name="password" type="password" minlength="6" required /></label>
-          <button class="button primary" type="submit">Crear cuenta</button>
-        </form>
+          <form class="access-form" id="clientLoginForm">
+            <label>Correo electrónico
+              <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><input name="email" type="email" placeholder="correo@empresa.com" autocomplete="username" required /></span>
+            </label>
+            <label>Contraseña
+              <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><input name="password" type="password" placeholder="Contraseña" autocomplete="current-password" required /></span>
+            </label>
+            <button class="button primary access-submit" type="submit">Acceder</button>
+            <button class="button secondary" id="clientLogout" type="button">Cerrar sesion</button>
+          </form>
 
-        <form class="account-card" id="clientLoginForm">
-          <p class="eyebrow">Cliente registrado</p>
-          <h2>Iniciar sesion</h2>
-          <label>Correo<input name="email" type="email" autocomplete="username" required /></label>
-          <label>Contrasena<input name="password" type="password" autocomplete="current-password" required /></label>
-          <button class="button primary" type="submit">Entrar</button>
-          <button class="button secondary" id="clientLogout" type="button">Cerrar sesion</button>
-        </form>
+          <div class="access-divider"><span>O CONTINUAR CON</span></div>
+          <div class="social-access" aria-label="Accesos externos">
+            <button type="button" disabled><span class="google-mark">G</span> Google</button>
+            <button type="button" disabled><span class="facebook-mark">f</span> Facebook</button>
+            <button type="button" disabled><span class="microsoft-mark"></span> Microsoft</button>
+            <button type="button" disabled><span class="apple-mark">A</span> Apple</button>
+          </div>
+          <p class="access-note">Los accesos externos se activarán cuando terminemos la configuración OAuth.</p>
 
-        <aside class="account-status" id="clientAccountStatus">
-          <p class="eyebrow">Estado</p>
-          <h2>Sin sesion activa</h2>
-          <p>Inicia sesion para enviar tu carrito de productos como solicitud de cotizacion.</p>
-          <a class="button primary" href="productos.html">Ver productos</a>
-        </aside>
+          <aside class="account-status" id="clientAccountStatus">
+            <p class="eyebrow">Estado</p>
+            <h2>Sin sesion activa</h2>
+            <p>Inicia sesión para enviar tu carrito de productos como solicitud de cotización.</p>
+            <a class="button primary" href="productos.html">Ver productos</a>
+          </aside>
+
+          <details class="register-panel">
+            <summary>Crear cuenta nueva</summary>
+            <form class="register-form" id="clientRegisterForm">
+              <label>Nombre de contacto<input name="contact_name" required /></label>
+              <label>Empresa<input name="company_name" required /></label>
+              <label>Teléfono<input name="phone" type="tel" /></label>
+              <label>Correo<input name="email" type="email" required /></label>
+              <label>Contraseña<input name="password" type="password" minlength="6" required /></label>
+              <button class="button primary" type="submit">Crear cuenta</button>
+            </form>
+          </details>
+        </div>
+
+        <div class="access-visual" role="img" aria-label="Ingenieria, deteccion y proteccion contra incendio">
+          <div class="visual-caption">
+            <p class="eyebrow">Portal cliente</p>
+            <h1>Cotizaciones, proyectos y seguimiento en un solo lugar.</h1>
+            <p>Ingeniería contra incendio, detección, supresión, mantenimiento y equipos especializados.</p>
+          </div>
+        </div>
       </section>
     </main>
 

@@ -234,18 +234,18 @@ function renderClientStatus() {
   if (!session?.customer) {
     clientAccountStatus.innerHTML = `
       <p class="eyebrow">Estado</p>
-      <h2>Sin sesion activa</h2>
-      <p>Inicia sesion para enviar tu carrito de productos como solicitud de cotizacion.</p>
+      <h2>Sin sesión activa</h2>
+      <p>Inicia sesión para enviar tu carrito de productos como solicitud de cotización.</p>
       <a class="button primary" href="productos.html">Ver productos</a>
     `;
     return;
   }
 
   clientAccountStatus.innerHTML = `
-    <p class="eyebrow">Sesion activa</p>
+    <p class="eyebrow">Sesión activa</p>
     <h2>${session.customer.company_name || session.customer.contact_name}</h2>
     <p>${session.customer.contact_name || ""}<br />${session.customer.email}</p>
-    <a class="button primary" href="productos.html">Generar cotizacion</a>
+    <a class="button primary" href="productos.html">Generar cotización</a>
   `;
 }
 
@@ -466,7 +466,7 @@ if (grid && searchInput) {
     if (!session?.access_token) {
       setFormStatus(quoteStatus, "Inicia sesion o crea tu cuenta para generar la cotizacion.", "error");
       window.setTimeout(() => {
-        window.location.href = "cuenta.html";
+        window.location.href = "https://extinrod.com/cuenta";
       }, 900);
       return;
     }
