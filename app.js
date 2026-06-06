@@ -192,7 +192,6 @@ const categoryNav = document.querySelector("#categoryNav");
 const categoryVisuals = document.querySelector("#categoryVisuals");
 const subcategoryNav = document.querySelector("#subcategoryNav");
 const footerProductNav = document.querySelector("#footerProductNav");
-const catalogCount = document.querySelector("#catalogCount");
 const cartCount = document.querySelector("#cartCount");
 const quoteDrawer = document.querySelector("#quoteDrawer");
 const wishlistDrawer = document.querySelector("#wishlistDrawer");
@@ -560,7 +559,6 @@ function renderSubcategoryNav() {
 
 function renderCatalogLanding() {
   if (!grid) return;
-  const total = products.length;
   const brandNames = [...new Set(products.map((product) => product.brand).filter(Boolean))].slice(0, 18);
   const categoryCards = categories
     .map((category) => {
@@ -590,11 +588,6 @@ function renderCatalogLanding() {
 
   grid.innerHTML = `
     <section class="catalog-landing featured-catalog">
-      <div class="catalog-landing-copy">
-        <p class="eyebrow">Categorias destacadas</p>
-        <h3>Selecciona una categoria para abrir su listado de productos.</h3>
-        <p>${total} productos indexados para cotizacion tecnica. Los precios se validan al iniciar sesion y solicitar propuesta.</p>
-      </div>
       <div class="catalog-family-grid">${categoryCards}</div>
       <div class="featured-brands ${featuredBrands.length ? "with-logos" : ""}">
         <h3>Marcas destacadas</h3>
@@ -623,20 +616,12 @@ function renderProducts() {
   renderSubcategoryNav();
 
   if (!shouldShowProducts()) {
-    if (catalogCount) {
-      catalogCount.textContent = `${products.length} productos organizados por familias`;
-    }
     renderCatalogLanding();
     return;
   }
 
   const items = filteredProducts();
   const visibleItems = items.slice(0, visibleProductLimit);
-
-  if (catalogCount) {
-    const currentCategory = categories.find((category) => category.id === activeCategory)?.name || "catalogo";
-    catalogCount.textContent = `${visibleItems.length} de ${items.length} productos en ${currentCategory}`;
-  }
 
   if (!items.length) {
     grid.innerHTML = '<p class="empty-state">No encontramos productos con ese filtro.</p>';
