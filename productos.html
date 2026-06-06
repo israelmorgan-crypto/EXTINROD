@@ -44,15 +44,28 @@
               <h2>Productos para integrar a tu cotizacion</h2>
               <p class="catalog-count" id="catalogCount">Cargando destacados Syscom...</p>
             </div>
-            <button class="cart-button" type="button" data-open-cart>
-              Cotizacion <span id="cartCount">0</span>
-            </button>
+            <div class="commerce-actions">
+              <button class="cart-button secondary-cart" type="button" data-open-wishlist>
+                Lista <span id="wishlistCount">0</span>
+              </button>
+              <button class="cart-button" type="button" data-open-cart>
+                Cotizacion <span id="cartCount">0</span>
+              </button>
+            </div>
           </div>
           <div id="categoryVisuals" class="category-visuals"></div>
-          <label class="search-box">
-            <span>Buscar producto</span>
-            <input id="searchInput" type="search" placeholder="Modelo, marca o descripcion" />
-          </label>
+          <div class="catalog-filters">
+            <label class="search-box">
+              <span>Buscar producto</span>
+              <input id="searchInput" type="search" placeholder="Modelo, marca o descripcion" />
+            </label>
+            <label class="search-box">
+              <span>Filtrar por marca</span>
+              <select id="brandFilter">
+                <option value="all">Todas las marcas</option>
+              </select>
+            </label>
+          </div>
           <div id="productGrid" class="product-grid" aria-live="polite">
             <article class="product-card" id="incendios">
               <div class="product-media"><img src="https://ftp3.syscom.mx/usuarios/fotos/BancoFotografiasSyscom/FIRE-LITE/ES1000X/ES1000X-g.PNG" alt="Panel direccionable contra incendio" loading="lazy" /></div>
@@ -109,6 +122,23 @@
             <button class="button primary" type="submit">Generar cotizacion</button>
             <a class="button secondary" id="quoteWhatsApp" href="contacto.html">Enviar por WhatsApp</a>
           </form>
+        </div>
+      </aside>
+
+      <aside class="quote-drawer" id="wishlistDrawer" aria-label="Lista de materiales" aria-hidden="true">
+        <div class="quote-card">
+          <div class="quote-head">
+            <div>
+              <p class="eyebrow">Preseleccion</p>
+              <h2>Lista de materiales</h2>
+            </div>
+            <button class="icon-close" type="button" data-close-wishlist aria-label="Cerrar">&times;</button>
+          </div>
+          <div id="wishlistItems" class="cart-items"></div>
+          <div class="quote-form">
+            <p class="form-status" id="wishlistStatus">Guarda equipos para revisarlos antes de generar tu cotizacion.</p>
+            <button class="button primary" type="button" data-wishlist-to-cart>Pasar a cotizacion</button>
+          </div>
         </div>
       </aside>
     </main>

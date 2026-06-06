@@ -186,19 +186,26 @@ let categories = [
 
 const grid = document.querySelector("#productGrid");
 const searchInput = document.querySelector("#searchInput");
+const brandFilter = document.querySelector("#brandFilter");
 const categoryNav = document.querySelector("#categoryNav");
 const categoryVisuals = document.querySelector("#categoryVisuals");
 const footerProductNav = document.querySelector("#footerProductNav");
 const catalogCount = document.querySelector("#catalogCount");
 const cartCount = document.querySelector("#cartCount");
 const quoteDrawer = document.querySelector("#quoteDrawer");
+const wishlistDrawer = document.querySelector("#wishlistDrawer");
 const cartItems = document.querySelector("#cartItems");
+const wishlistItems = document.querySelector("#wishlistItems");
+const wishlistCount = document.querySelector("#wishlistCount");
+const wishlistStatus = document.querySelector("#wishlistStatus");
 const quoteWhatsApp = document.querySelector("#quoteWhatsApp");
 const quoteRequestForm = document.querySelector("#quoteRequestForm");
 const quoteMessage = document.querySelector("#quoteMessage");
 const quoteStatus = document.querySelector("#quoteStatus");
 let activeCategory = location.hash ? location.hash.slice(1) : "all";
+let activeBrand = "all";
 let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
+let wishlist = JSON.parse(localStorage.getItem("extinrod_wishlist") || "[]");
 let catalogPricesVisible = false;
 
 const clientRegisterForm = document.querySelector("#clientRegisterForm");
@@ -360,6 +367,45 @@ function money(value) {
   }).format(value);
 }
 
+function productCode(product) {
+  return String(product.model || product.sku || product.externalId || product.name || "").trim();
+}
+
+function decodeProductCode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function productByCode(code) {
+  return products.find((item) => productCode(item) === code);
+}
+
+function persistWishlist() {
+  localStorage.setItem("extinrod_wishlist", JSON.stringify(wishlist));
+}
+
+function isWishlisted(product) {
+  const code = productCode(product);
+  return wishlist.some((item) => String(item.sku || item.model) === code);
+}
+
+function wishlistPayload(product) {
+  return {
+    externalId: product.externalId || "",
+    sku: productCode(product),
+    model: product.model || productCode(product),
+    brand: product.brand || "",
+    name: product.name || product.model || "Producto",
+    image: product.image || "",
+    url: product.url || "",
+    category: product.category || "",
+    categoryName: product.categoryName || "",
+  };
+}
+
 function normalize(text) {
   return text
     .toLowerCase()
@@ -376,8 +422,9 @@ function filteredProducts() {
   const query = searchInput.value.trim();
   return products.filter((product) => {
     const matchesCategory = activeCategory === "all" || product.category === activeCategory;
+    const matchesBrand = activeBrand === "all" || product.brand === activeBrand;
     const matchesQuery = query === "" || productMatches(product, query);
-    return matchesCategory && matchesQuery;
+    return matchesCategory && matchesBrand && matchesQuery;
   });
 }
 
@@ -385,6 +432,18 @@ function syncButtons() {
   document.querySelectorAll(".category-button").forEach((button) => {
     button.classList.toggle("active", button.dataset.category === activeCategory);
   });
+}
+
+function renderBrandFilter() {
+  if (!brandFilter) return;
+  const brands = [...new Set(products.map((product) => product.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b, "es"));
+  const previous = activeBrand;
+  brandFilter.innerHTML = [
+    '<option value="all">Todas las marcas</option>',
+    ...brands.map((brand) => `<option value="${brand}">${brand}</option>`),
+  ].join("");
+  activeBrand = brands.includes(previous) ? previous : "all";
+  brandFilter.value = activeBrand;
 }
 
 function renderProducts() {
@@ -402,7 +461,11 @@ function renderProducts() {
 
   grid.innerHTML = items
     .map(
-      (product) => `
+      (product) => {
+        const code = productCode(product);
+        const encodedCode = encodeURIComponent(code);
+        const saved = isWishlisted(product);
+        return `
         <article class="product-card" id="${product.category}">
           <div class="product-media">
             <img src="${product.image}" alt="${product.model} ${product.brand}" loading="lazy" />
@@ -420,11 +483,15 @@ function renderProducts() {
             </span>
             <div class="price-row">
               <span class="price">Precio al cotizar</span>
-              <button class="detail-link" type="button" data-add-product="${product.model}">Agregar</button>
+              <div class="product-actions">
+                <button class="save-link ${saved ? "saved" : ""}" type="button" data-wishlist-product="${encodedCode}">${saved ? "Guardado" : "Guardar"}</button>
+                <button class="detail-link" type="button" data-add-product="${encodedCode}">Agregar</button>
+              </div>
             </div>
           </div>
         </article>
-      `
+      `;
+      }
     )
     .join("");
 }
@@ -448,7 +515,9 @@ function updateCart() {
   const showCartPrices = Boolean(session?.access_token);
   cartItems.innerHTML = quoteCart
     .map(
-      (item) => `
+      (item) => {
+        const encodedCode = encodeURIComponent(item.model || item.sku);
+        return `
         <article class="cart-line">
           <div>
             <strong>${item.model}</strong>
@@ -456,17 +525,46 @@ function updateCart() {
             ${showCartPrices && item.listPriceMxn ? `<small>Precio lista: ${money(item.listPriceMxn)} MXN</small>` : "<small>Precio al validar cotizacion</small>"}
           </div>
           <div class="cart-actions">
-            <button type="button" data-dec-product="${item.model}">-</button>
+            <button type="button" data-dec-product="${encodedCode}">-</button>
             <span>${item.qty}</span>
-            <button type="button" data-inc-product="${item.model}">+</button>
+            <button type="button" data-inc-product="${encodedCode}">+</button>
           </div>
         </article>
-      `
+      `;
+      }
     )
     .join("");
 
   const lines = quoteCart.map((item) => `${item.qty} x ${item.model} - ${item.name}`).join("%0A");
   quoteWhatsApp.href = `https://wa.me/525536191672?text=Hola%20EXTINROD,%20quiero%20cotizar:%0A${lines}`;
+}
+
+function updateWishlist() {
+  if (wishlistCount) wishlistCount.textContent = wishlist.length;
+  if (!wishlistItems) return;
+
+  if (!wishlist.length) {
+    wishlistItems.innerHTML = '<p class="empty-state">Todavia no guardas productos.</p>';
+    return;
+  }
+
+  wishlistItems.innerHTML = wishlist
+    .map(
+      (item) => `
+        <article class="cart-line wishlist-line">
+          <img src="${item.image || "assets/logo-extinrod.png"}" alt="${item.model || item.sku}" loading="lazy" />
+          <div>
+            <strong>${item.model || item.sku}</strong>
+            <span>${item.name}</span>
+            <small>${item.brand || "Marca por confirmar"}</small>
+          </div>
+          <div class="cart-actions single-action">
+            <button type="button" data-remove-wishlist="${encodeURIComponent(item.sku || item.model)}">x</button>
+          </div>
+        </article>
+      `
+    )
+    .join("");
 }
 
 function renderCategoryVisuals() {
@@ -530,9 +628,10 @@ function renderCategorySurfaces() {
 }
 
 function addToCart(model) {
-  const product = products.find((item) => item.model === model);
+  const product = productByCode(decodeProductCode(model));
   if (!product) return;
-  const existing = quoteCart.find((item) => item.model === model);
+  const code = productCode(product);
+  const existing = quoteCart.find((item) => item.model === code || item.sku === code);
   if (existing) {
     existing.qty += 1;
   } else {
@@ -556,11 +655,137 @@ function addToCart(model) {
 }
 
 function changeCartQty(model, delta) {
+  const code = decodeProductCode(model);
   quoteCart = quoteCart
-    .map((item) => (item.model === model ? { ...item, qty: item.qty + delta } : item))
+    .map((item) => (item.model === code || item.sku === code ? { ...item, qty: item.qty + delta } : item))
     .filter((item) => item.qty > 0);
   persistCart();
   updateCart();
+}
+
+async function syncWishlistItem(method, item) {
+  const session = getClientSession();
+  if (!session?.access_token) return false;
+
+  const response = await fetch("/api/wishlist", {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify(item),
+  });
+
+  return response.ok;
+}
+
+async function loadWishlistFromApi() {
+  const session = getClientSession();
+  if (!session?.access_token) {
+    updateWishlist();
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/wishlist", {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+      cache: "no-store",
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || !Array.isArray(body.items)) {
+      updateWishlist();
+      return;
+    }
+
+    wishlist = body.items.map((item) => ({
+      externalId: item.external_id || "",
+      sku: item.sku,
+      model: item.model || item.sku,
+      brand: item.brand || "",
+      name: item.name,
+      image: item.image_url || "",
+      url: item.product_url || "",
+      category: item.category || "",
+      categoryName: item.category || "",
+    }));
+    persistWishlist();
+    updateWishlist();
+    renderProducts();
+  } catch {
+    updateWishlist();
+  }
+}
+
+async function toggleWishlist(model) {
+  const session = getClientSession();
+  if (!session?.access_token) {
+    setFormStatus(wishlistStatus, "Inicia sesion para guardar tu lista de materiales.", "error");
+    wishlistDrawer?.classList.add("open");
+    wishlistDrawer?.setAttribute("aria-hidden", "false");
+    window.setTimeout(() => {
+      window.location.href = "https://extinrod.com/cuenta";
+    }, 1000);
+    return;
+  }
+
+  const product = productByCode(decodeProductCode(model));
+  if (!product) return;
+  const item = wishlistPayload(product);
+  const exists = wishlist.some((saved) => String(saved.sku || saved.model) === item.sku);
+
+  if (exists) {
+    wishlist = wishlist.filter((saved) => String(saved.sku || saved.model) !== item.sku);
+    persistWishlist();
+    updateWishlist();
+    renderProducts();
+    await syncWishlistItem("DELETE", { sku: item.sku });
+    return;
+  }
+
+  wishlist = [item, ...wishlist.filter((saved) => String(saved.sku || saved.model) !== item.sku)];
+  persistWishlist();
+  updateWishlist();
+  renderProducts();
+  wishlistDrawer?.classList.add("open");
+  wishlistDrawer?.setAttribute("aria-hidden", "false");
+  setFormStatus(wishlistStatus, "Producto guardado en tu lista de materiales.", "ok");
+  await syncWishlistItem("POST", item);
+}
+
+function wishlistToCart() {
+  wishlist.forEach((item) => {
+    const product = productByCode(item.sku || item.model);
+    if (product) {
+      addToCart(productCode(product));
+      return;
+    }
+
+    const code = String(item.sku || item.model);
+    const existing = quoteCart.find((cartItem) => cartItem.model === code || cartItem.sku === code);
+    if (existing) {
+      existing.qty += 1;
+      return;
+    }
+
+    quoteCart.push({
+      model: item.model || code,
+      sku: code,
+      name: item.name || code,
+      brand: item.brand || "",
+      qty: 1,
+      price: null,
+      listPriceMxn: null,
+      stock: null,
+      source: "wishlist",
+      externalId: item.externalId || "",
+    });
+  });
+  persistCart();
+  updateCart();
+  wishlistDrawer?.classList.remove("open");
+  wishlistDrawer?.setAttribute("aria-hidden", "true");
+  quoteDrawer?.classList.add("open");
+  quoteDrawer?.setAttribute("aria-hidden", "false");
 }
 
 async function loadProductsFromApi() {
@@ -581,8 +806,10 @@ async function loadProductsFromApi() {
       categories = catalog.categories;
       renderCategorySurfaces();
     }
+    renderBrandFilter();
     renderProducts();
     updateCart();
+    loadWishlistFromApi();
   } catch {
     renderProducts();
   }
@@ -592,10 +819,15 @@ if (grid && searchInput) {
   renderCategorySurfaces();
 
   searchInput.addEventListener("input", renderProducts);
+  brandFilter?.addEventListener("change", () => {
+    activeBrand = brandFilter.value;
+    renderProducts();
+  });
   grid.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-add-product]");
-    if (!button) return;
-    addToCart(button.dataset.addProduct);
+    const addButton = event.target.closest("[data-add-product]");
+    const wishlistButton = event.target.closest("[data-wishlist-product]");
+    if (addButton) addToCart(addButton.dataset.addProduct);
+    if (wishlistButton) toggleWishlist(wishlistButton.dataset.wishlistProduct);
   });
 
   cartItems?.addEventListener("click", (event) => {
@@ -614,6 +846,29 @@ if (grid && searchInput) {
     quoteDrawer?.classList.remove("open");
     quoteDrawer?.setAttribute("aria-hidden", "true");
   });
+
+  document.querySelector("[data-open-wishlist]")?.addEventListener("click", () => {
+    wishlistDrawer?.classList.add("open");
+    wishlistDrawer?.setAttribute("aria-hidden", "false");
+  });
+
+  document.querySelector("[data-close-wishlist]")?.addEventListener("click", () => {
+    wishlistDrawer?.classList.remove("open");
+    wishlistDrawer?.setAttribute("aria-hidden", "true");
+  });
+
+  wishlistItems?.addEventListener("click", async (event) => {
+    const removeButton = event.target.closest("[data-remove-wishlist]");
+    if (!removeButton) return;
+    const sku = decodeProductCode(removeButton.dataset.removeWishlist);
+    wishlist = wishlist.filter((item) => String(item.sku || item.model) !== sku);
+    persistWishlist();
+    updateWishlist();
+    renderProducts();
+    await syncWishlistItem("DELETE", { sku });
+  });
+
+  document.querySelector("[data-wishlist-to-cart]")?.addEventListener("click", wishlistToCart);
 
   quoteRequestForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -668,7 +923,9 @@ if (grid && searchInput) {
   });
 
   renderProducts();
+  renderBrandFilter();
   updateCart();
+  updateWishlist();
   loadProductsFromApi();
 }
 
@@ -724,6 +981,7 @@ clientLoginForm?.addEventListener("submit", async (event) => {
     setClientSession(body);
     clientLoginForm.reset();
     renderClientStatus();
+    loadWishlistFromApi();
   } catch (error) {
     alert(error.message || "No se pudo iniciar sesion.");
   } finally {
@@ -749,6 +1007,7 @@ document.addEventListener("click", (event) => {
   if (!logoutButton) return;
   clearClientSession();
   renderClientStatus();
+  loadWishlistFromApi();
 });
 
 handleClientOAuthReturn();

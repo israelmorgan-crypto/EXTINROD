@@ -128,6 +128,22 @@ create table if not exists public.quote_request_items (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.customer_wishlist_items (
+  id uuid primary key default gen_random_uuid(),
+  customer_id uuid not null references public.customers(id) on delete cascade,
+  external_source text not null default 'syscom',
+  external_id text,
+  sku text not null,
+  model text,
+  brand text,
+  name text not null,
+  image_url text,
+  product_url text,
+  category text,
+  created_at timestamptz not null default now(),
+  unique (customer_id, external_source, sku)
+);
+
 create table if not exists public.maintenance_assets (
   id uuid primary key default gen_random_uuid(),
   customer_id uuid not null references public.customers(id) on delete cascade,
@@ -148,6 +164,7 @@ create index if not exists products_category_idx on public.products(category) wh
 create index if not exists products_sku_idx on public.products(sku);
 create index if not exists quote_requests_status_idx on public.quote_requests(status, created_at);
 create index if not exists quote_request_items_request_idx on public.quote_request_items(quote_request_id);
+create index if not exists customer_wishlist_items_customer_idx on public.customer_wishlist_items(customer_id, created_at desc);
 
 alter table public.employees enable row level security;
 alter table public.customers enable row level security;
@@ -158,6 +175,7 @@ alter table public.quotes enable row level security;
 alter table public.products enable row level security;
 alter table public.quote_requests enable row level security;
 alter table public.quote_request_items enable row level security;
+alter table public.customer_wishlist_items enable row level security;
 alter table public.maintenance_assets enable row level security;
 
 create or replace function public.link_employee_auth_user()
@@ -230,6 +248,8 @@ drop policy if exists "Authenticated staff read quote requests" on public.quote_
 drop policy if exists "Authenticated staff manage quote requests" on public.quote_requests;
 drop policy if exists "Authenticated staff read quote request items" on public.quote_request_items;
 drop policy if exists "Authenticated staff manage quote request items" on public.quote_request_items;
+drop policy if exists "Authenticated staff read customer wishlist" on public.customer_wishlist_items;
+drop policy if exists "Authenticated staff manage customer wishlist" on public.customer_wishlist_items;
 drop policy if exists "Authenticated staff manage maintenance assets" on public.maintenance_assets;
 
 create policy "Employees read own profile"
@@ -299,6 +319,17 @@ create policy "Authenticated staff read quote request items"
 
 create policy "Authenticated staff manage quote request items"
   on public.quote_request_items for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
+
+create policy "Authenticated staff read customer wishlist"
+  on public.customer_wishlist_items for select
+  to authenticated
+  using (public.is_active_employee());
+
+create policy "Authenticated staff manage customer wishlist"
+  on public.customer_wishlist_items for all
   to authenticated
   using (public.is_active_employee())
   with check (public.is_active_employee());
