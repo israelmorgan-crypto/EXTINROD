@@ -206,8 +206,8 @@ p {
 .hero-copy h1,
 .page-hero h1 {
   margin-bottom: 16px;
-  font-size: clamp(2.7rem, 8vw, 6.4rem);
-  line-height: 0.95;
+  font-size: clamp(2.3rem, 6vw, 5.2rem);
+  line-height: 0.98;
 }
 
 .hero-copy h1 {
@@ -342,7 +342,7 @@ h3 {
 .product-video-hero {
   position: relative;
   display: grid;
-  min-height: clamp(390px, 54vw, 560px);
+  min-height: clamp(340px, 44vw, 500px);
   align-items: end;
   overflow: hidden;
   isolation: isolate;
@@ -374,7 +374,14 @@ h3 {
 
 .page-hero-copy {
   position: relative;
-  max-width: 820px;
+  max-width: 760px;
+}
+
+.product-video-hero .page-hero-copy h1 {
+  max-width: 720px;
+  font-size: clamp(2.05rem, 4.8vw, 4.35rem);
+  font-weight: 900;
+  line-height: 1.02;
 }
 
 .page-hero p {
@@ -736,8 +743,13 @@ h3 {
 
 .catalog-shell {
   display: grid;
-  grid-template-columns: 260px 1fr;
-  gap: 24px;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.catalog-main {
+  width: min(1380px, 100%);
+  margin: 0 auto;
 }
 
 .commerce-toolbar {
@@ -846,32 +858,6 @@ h3 {
   color: var(--muted);
   font-size: 0.82rem;
   line-height: 1.35;
-}
-
-.category-nav {
-  position: sticky;
-  top: 88px;
-  align-self: start;
-  display: grid;
-  gap: 8px;
-}
-
-.category-button {
-  min-height: 42px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: var(--white);
-  color: var(--muted);
-  font-weight: 900;
-  text-align: left;
-  cursor: pointer;
-}
-
-.category-button.active {
-  color: var(--white);
-  border-color: var(--steel);
-  background: var(--steel);
 }
 
 .catalog-filters {
@@ -2054,11 +2040,6 @@ h3 {
 
   .maintenance-card {
     min-height: auto;
-  }
-
-  .category-nav {
-    position: static;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
 
   .category-visuals {
