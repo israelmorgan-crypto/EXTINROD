@@ -308,7 +308,7 @@ function updateCart() {
     .join("");
 
   const lines = quoteCart.map((item) => `${item.qty} x ${item.model} - ${item.name}`).join("%0A");
-  quoteWhatsApp.href = `https://wa.me/525550536158?text=Hola%20EXTINROD,%20quiero%20cotizar:%0A${lines}`;
+  quoteWhatsApp.href = `https://wa.me/525536191672?text=Hola%20EXTINROD,%20quiero%20cotizar:%0A${lines}`;
 }
 
 function addToCart(model) {
