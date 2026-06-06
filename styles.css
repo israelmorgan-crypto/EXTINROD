@@ -1011,39 +1011,51 @@ h3 {
 
 .catalog-family-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
-  gap: 28px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 24px;
 }
 
 .catalog-family-card {
   display: grid;
   justify-items: center;
-  gap: 9px;
-  min-height: 154px;
-  padding: 10px 8px;
-  border: 1px solid transparent;
+  align-content: start;
+  gap: 12px;
+  min-height: 232px;
+  padding: 18px 16px 16px;
+  border: 1px solid rgba(36, 87, 109, 0.12);
   border-radius: 8px;
-  background: transparent;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(246, 250, 252, 0.98)),
+    radial-gradient(circle at 50% 25%, rgba(205, 16, 36, 0.12), transparent 48%);
+  box-shadow: 0 18px 36px rgba(18, 43, 60, 0.08);
   color: var(--steel);
   text-align: center;
   text-decoration: none;
   cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .catalog-family-card:hover {
-  border-color: rgba(36, 87, 109, 0.16);
+  transform: translateY(-4px);
+  border-color: rgba(205, 16, 36, 0.22);
   background: var(--white);
+  box-shadow: 0 24px 48px rgba(18, 43, 60, 0.14);
 }
 
 .catalog-family-card img {
-  width: 96px;
-  height: 80px;
+  width: min(100%, 168px);
+  height: 142px;
+  padding: 12px;
   object-fit: contain;
+  border-radius: 8px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 255, 255, 0.96), rgba(236, 242, 246, 0.82) 58%, rgba(214, 225, 232, 0.72)),
+    linear-gradient(135deg, rgba(205, 16, 36, 0.08), rgba(17, 61, 88, 0.08));
 }
 
 .catalog-family-card span {
   color: var(--steel);
-  font-size: 0.78rem;
+  font-size: 0.86rem;
   font-weight: 900;
   line-height: 1.2;
   text-transform: uppercase;
