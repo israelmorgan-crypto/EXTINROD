@@ -42,18 +42,38 @@ body.locked [data-private] {
 }
 
 .login-screen {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   padding: clamp(18px, 5vw, 48px);
+  background: #0b1a24;
+}
+
+.login-screen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   background:
-    radial-gradient(circle at center, rgba(8, 18, 26, 0.18), rgba(8, 18, 26, 0.58) 56%, rgba(8, 18, 26, 0.9)),
-    linear-gradient(90deg, rgba(15, 38, 53, 0.74), rgba(15, 38, 53, 0.34)),
-    url("../assets/crm-login-engineering.png") center / cover;
+    radial-gradient(circle at center, rgba(8, 18, 26, 0.12), rgba(8, 18, 26, 0.52) 56%, rgba(8, 18, 26, 0.9)),
+    linear-gradient(90deg, rgba(15, 38, 53, 0.76), rgba(15, 38, 53, 0.32));
+}
+
+.login-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .login-card {
+  position: relative;
+  z-index: 2;
   width: min(440px, 100%);
   display: grid;
   gap: 16px;
@@ -112,11 +132,34 @@ body.locked [data-private] {
   border-color: rgba(255, 255, 255, 0.55);
 }
 
+.login-status,
 .login-error {
   min-height: 20px;
   margin: 0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.login-status {
+  color: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.login-status.ok {
+  color: #c7f7d7;
+  background: rgba(37, 112, 79, 0.24);
+}
+
+.login-error {
   color: #ffb5bd;
   font-weight: 800;
+  background: rgba(181, 31, 43, 0.22);
+}
+
+.login-error:empty {
+  display: none;
 }
 
 .sidebar {
@@ -443,6 +486,10 @@ dialog {
   .login-screen {
     align-items: center;
     background-position: center;
+  }
+
+  .login-bg {
+    object-position: 54% center;
   }
 
   .login-card {

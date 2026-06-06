@@ -51,6 +51,7 @@ const loginForm = document.querySelector("#loginForm");
 const loginEmail = document.querySelector("#loginEmail");
 const loginPassword = document.querySelector("#loginPassword");
 const loginError = document.querySelector("#loginError");
+const authStatus = document.querySelector("#authStatus");
 const loginScreen = document.querySelector("#loginScreen");
 const logoutButton = document.querySelector("#logoutButton");
 const sessionLabel = document.querySelector("#sessionLabel");
@@ -68,6 +69,28 @@ function setLockedState(isActive) {
   privateSections.forEach((section) => {
     section.hidden = !isActive;
   });
+}
+
+function setAuthMessage(message, state = "info") {
+  authStatus.textContent = message;
+  authStatus.classList.toggle("ok", state === "ok");
+}
+
+function setAuthError(message) {
+  loginError.textContent = message;
+}
+
+function clearAuthError() {
+  loginError.textContent = "";
+}
+
+function withTimeout(promise, ms, message) {
+  let timeoutId;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(message)), ms);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
 }
 
 function clearDashboard() {
@@ -163,58 +186,85 @@ async function loadEmployeeProfile() {
 async function initializeAuth() {
   setLockedState(false);
   clearDashboard();
+  clearAuthError();
+  setAuthMessage("Conectando con Supabase...");
 
   try {
-    const config = await loadSupabaseConfig();
+    const config = await withTimeout(loadSupabaseConfig(), 10000, "No se pudo conectar con la configuracion del CRM.");
     if (!config.supabase?.configured) {
-      loginError.textContent = "Falta configurar Supabase en Vercel.";
+      setAuthError("Falta configurar Supabase en Vercel.");
+      setAuthMessage("Configuracion incompleta.");
       return;
     }
 
     if (!window.supabase?.createClient) {
-      loginError.textContent = "No se pudo cargar Supabase Auth.";
+      setAuthError("No se pudo cargar Supabase Auth. Revisa conexion o bloqueadores del navegador.");
+      setAuthMessage("Supabase no cargo en el navegador.");
       return;
     }
 
     supabaseClient = window.supabase.createClient(config.supabase.url, config.supabase.anonKey);
-    const { data } = await supabaseClient.auth.getSession();
+    const { data } = await withTimeout(
+      supabaseClient.auth.getSession(),
+      10000,
+      "No se pudo revisar la sesion actual."
+    );
 
     if (data.session) {
       await loadEmployeeProfile();
       renderAll();
       setLockedState(true);
+      setAuthMessage("Acceso autorizado.", "ok");
+      return;
     }
+
+    setAuthMessage("Listo. Ingresa tu correo y contrasena.");
   } catch (error) {
-    loginError.textContent = error.message || "No se pudo iniciar Supabase Auth.";
+    setAuthError(error.message || "No se pudo iniciar Supabase Auth.");
+    setAuthMessage("No se pudo preparar el acceso.");
   }
 }
 
 loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  loginError.textContent = "";
+  clearAuthError();
+  setAuthMessage("Validando acceso...");
 
   if (!supabaseClient) {
-    loginError.textContent = "Supabase aun no esta configurado.";
+    setAuthError("Supabase aun no esta configurado.");
+    setAuthMessage("Acceso no disponible.");
     return;
   }
 
   const email = loginEmail.value.trim().toLowerCase();
   const password = loginPassword.value;
-  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    loginError.textContent = "Correo o contrasena incorrectos.";
-    return;
-  }
+  const submitButton = loginForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
 
   try {
+    const { error } = await withTimeout(
+      supabaseClient.auth.signInWithPassword({ email, password }),
+      12000,
+      "La validacion tardo demasiado. Revisa tu conexion e intenta otra vez."
+    );
+
+    if (error) {
+      setAuthError(error.message || "Correo o contrasena incorrectos.");
+      setAuthMessage("No se pudo iniciar sesion.");
+      return;
+    }
+
     await loadEmployeeProfile();
     renderAll();
     loginPassword.value = "";
+    setAuthMessage("Acceso autorizado.", "ok");
     setLockedState(true);
   } catch (profileError) {
     await supabaseClient.auth.signOut();
-    loginError.textContent = profileError.message;
+    setAuthError(profileError.message);
+    setAuthMessage("El usuario no tiene perfil autorizado.");
+  } finally {
+    submitButton.disabled = false;
   }
 });
 

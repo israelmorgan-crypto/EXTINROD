@@ -9,6 +9,7 @@
   </head>
   <body class="locked">
     <section class="login-screen" id="loginScreen" aria-label="Acceso al CRM">
+      <img class="login-bg" src="../assets/crm-login-engineering.png" alt="" aria-hidden="true" />
       <form class="login-card" id="loginForm">
         <a class="login-brand" href="../index.html">
           <img src="../../LOGO EXTINROD.png" alt="EXTINROD" />
@@ -24,6 +25,7 @@
         <label>Contrasena
           <input id="loginPassword" type="password" autocomplete="current-password" required />
         </label>
+        <p class="login-status" id="authStatus" role="status">Conectando con Supabase...</p>
         <p class="login-error" id="loginError" role="alert"></p>
         <button class="primary-action" type="submit">Entrar al CRM</button>
       </form>
