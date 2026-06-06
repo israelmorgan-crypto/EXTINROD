@@ -551,7 +551,7 @@ function renderCatalogLanding() {
     .map((category) => {
       const count = products.filter((product) => product.category === category.id).length;
       return `
-        <a class="catalog-family-card" href="productos.html?categoria=${category.id}">
+        <a class="catalog-family-card" href="productos?categoria=${category.id}">
           <img src="${category.image || "assets/logo-extinrod.png"}" alt="${category.name}" loading="lazy" />
           <span>${category.name}</span>
           <strong>${count} productos</strong>
@@ -612,7 +612,7 @@ function renderProducts() {
         const saved = isWishlisted(product);
         return `
         <article class="product-card product-list-card" id="${product.category}">
-          <a class="product-media" href="producto.html?sku=${encodedCode}">
+          <a class="product-media" href="producto?sku=${encodedCode}">
             <img src="${product.image}" alt="${product.model} ${product.brand}" loading="lazy" />
           </a>
           <div class="product-body">
@@ -630,7 +630,7 @@ function renderProducts() {
               <span class="price">Precio al cotizar</span>
               <div class="product-actions">
                 <button class="save-link ${saved ? "saved" : ""}" type="button" data-wishlist-product="${encodedCode}">${saved ? "Guardado" : "Guardar"}</button>
-                <a class="detail-link ghost-link" href="producto.html?sku=${encodedCode}">Ver ficha</a>
+                <a class="detail-link ghost-link" href="producto?sku=${encodedCode}">Ver ficha</a>
                 <button class="detail-link" type="button" data-add-product="${encodedCode}">Agregar</button>
               </div>
             </div>
@@ -747,7 +747,7 @@ function selectCategory(categoryId) {
   activeCategory = categoryId;
   activeSubcategory = "all";
   visibleProductLimit = 12;
-  history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `productos.html?categoria=${activeCategory}`);
+  history.replaceState(null, "", activeCategory === "all" ? "productos" : `productos?categoria=${activeCategory}`);
   renderProducts();
 }
 
@@ -771,7 +771,7 @@ function renderFooterProductNav() {
 
   footerProductNav.innerHTML = [
     "<h3>Productos</h3>",
-    ...categories.map((category) => `<a href="productos.html?categoria=${category.id}">${category.name}</a>`),
+    ...categories.map((category) => `<a href="productos?categoria=${category.id}">${category.name}</a>`),
   ].join("");
 }
 
@@ -959,7 +959,7 @@ function renderRelatedProducts(currentProduct) {
     .map((product) => {
       const code = encodeURIComponent(productCode(product));
       return `
-        <a class="related-product" href="producto.html?sku=${code}">
+        <a class="related-product" href="producto?sku=${code}">
           <img src="${product.image || "assets/logo-extinrod.png"}" alt="${product.model}" loading="lazy" />
           <span>${product.brand}</span>
           <strong>${product.model}</strong>
@@ -999,7 +999,7 @@ function renderProductDetail() {
     <nav class="product-breadcrumb" aria-label="Ruta">
       <a href="productos.html">Productos</a>
       <span>/</span>
-      <a href="productos.html?categoria=${product.category}">${product.categoryName}</a>
+      <a href="productos?categoria=${product.category}">${product.categoryName}</a>
       <span>/</span>
       <strong>${product.model}</strong>
     </nav>
