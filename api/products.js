@@ -77,7 +77,28 @@ const FEATURED_CATEGORIES = [
     summary: "Sensores, control, relevadores, cerramientos y monitoreo tecnico.",
     searches: ["sensor temperatura", "relevador", "controlador", "gabinete industrial", "sensor humedad", "monitoreo ambiental"],
   },
+  {
+    id: "otros",
+    name: "Otros destacados",
+    summary: "Productos destacados complementarios para integracion de proyectos.",
+    searches: ["syscom destacado"],
+  },
 ];
+
+const CATEGORY_RULES = {
+  incendios: ["incendio", "fire", "humo", "smoke", "detector", "sirena", "estrobo", "pull", "nac", "notifier", "fire-lite", "system sensor"],
+  voceo: ["voceo", "evacuacion", "audio", "amplificador", "bocina", "altavoz", "microfono", "70v", "speaker"],
+  data: ["cat6", "cat 6", "cat5", "utp", "patch", "panduit", "cable", "fibra", "rack", "gabinete", "keystone"],
+  climas: ["minisplit", "aire acondicionado", "clima", "termostato", "hvac", "ventilador", "hoffman"],
+  videovigilancia: ["camara", "camera", "nvr", "dvr", "hikvision", "epcom", "ptz", "cctv", "videovigilancia", "poe"],
+  accesos: ["acceso", "biometrico", "zkteco", "cerradura", "magnetica", "lector", "proximidad", "torniquete"],
+  intrusion: ["alarma", "intrusion", "motion", "movimiento", "contacto magnetico", "glass", "vista", "resideo"],
+  redes: ["switch", "router", "access point", "wifi", "wi-fi", "ubiquiti", "mikrotik", "tp-link", "redes"],
+  energia: ["ups", "bateria", "battery", "fuente", "power", "solar", "inversor", "regulador", "supresor"],
+  canalizacion: ["canaleta", "conduit", "charola", "tuberia", "registro", "abrazadera", "nema"],
+  herramientas: ["herramienta", "probador", "tester", "ponchadora", "crimp", "multimetro", "etiquetadora"],
+  automatizacion: ["sensor", "relevador", "relay", "controlador", "automatizacion", "temperatura", "humedad"],
+};
 
 function readLocalCatalog() {
   const catalogPath = path.join(process.cwd(), "data", "products.json");
@@ -159,6 +180,31 @@ function mapSyscomProduct(product, category, exchangeRate, includePrices) {
   };
 }
 
+function classifySyscomProduct(product) {
+  const text = [
+    product.titulo,
+    product.nombre,
+    product.name,
+    product.descripcion,
+    product.description,
+    product.marca,
+    product.brand,
+    product.modelo,
+    product.model,
+    product.categoria,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  for (const category of FEATURED_CATEGORIES) {
+    const rules = CATEGORY_RULES[category.id] || [];
+    if (rules.some((rule) => text.includes(rule))) return category;
+  }
+
+  return FEATURED_CATEGORIES.find((category) => category.id === "otros") || FEATURED_CATEGORIES[0];
+}
+
 function mapLocalProduct(product, includePrices) {
   return {
     ...product,
@@ -233,12 +279,65 @@ async function getExchangeRate(token) {
   }
 }
 
-async function getSyscomProducts(token, includePrices, maxProducts) {
-  const exchangeRate = await getExchangeRate(token);
+async function runInBatches(items, batchSize, worker) {
+  const results = [];
+
+  for (let index = 0; index < items.length; index += batchSize) {
+    const batch = items.slice(index, index + batchSize);
+    const batchResults = await Promise.all(batch.map(worker));
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+
+async function getSyscomTopSellerProducts(token, includePrices, maxProducts, exchangeRate) {
   const seen = new Set();
   const products = [];
+  const pageCount = Math.min(Math.ceil(maxProducts / 10) + 4, 40);
+  const pages = Array.from({ length: pageCount }, (_, index) => index + 1);
+  const payloads = await runInBatches(pages, 6, async (page) => {
+    const params = new URLSearchParams({
+      stock: "1",
+      orden: "topseller",
+      pagina: String(page),
+    });
+
+    try {
+      return await syscomFetch(`/productos?${params.toString()}`, token);
+    } catch {
+      return {};
+    }
+  });
+
+  for (const payload of payloads) {
+    for (const item of asArray(payload)) {
+      const category = classifySyscomProduct(item);
+      const mapped = mapSyscomProduct(item, category, exchangeRate, includePrices);
+      const key = mapped.externalId || mapped.model;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      products.push(mapped);
+      if (products.length >= maxProducts) return products;
+    }
+  }
+
+  return products;
+}
+
+async function getSyscomProducts(token, includePrices, maxProducts) {
+  const exchangeRate = await getExchangeRate(token);
+  const topSellerProducts = await getSyscomTopSellerProducts(token, includePrices, maxProducts, exchangeRate);
+
+  if (topSellerProducts.length >= Math.min(maxProducts, 60)) {
+    return topSellerProducts;
+  }
+
+  const seen = new Set();
+  const products = [...topSellerProducts];
+  topSellerProducts.forEach((product) => seen.add(product.externalId || product.model));
   const maxPerCategory = Math.max(12, Math.ceil(maxProducts / FEATURED_CATEGORIES.length));
-  const pagesPerSearch = maxProducts > 400 ? 3 : 2;
+  const pagesPerSearch = maxProducts > 400 ? 2 : 1;
 
   for (const category of FEATURED_CATEGORIES) {
     let categoryCount = 0;

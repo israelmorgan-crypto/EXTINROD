@@ -43,7 +43,8 @@ Tambien acepta `SYSCOM_API_TOKEN`, pero ese token puede expirar. Con `SYSCOM_CLI
 - Canalizacion
 - Herramientas
 - Automatizacion
+- Otros destacados
 
 Sin sesion de cliente, el catalogo no expone precios. Con sesion activa, el endpoint puede incluir precio de lista en MXN para adjuntarlo a la solicitud de cotizacion.
 
-Por defecto la pagina solicita hasta 600 productos destacados de Syscom. El endpoint acepta `?limit=` hasta 1200 para ampliar el volumen sin cambiar el frontend.
+Por defecto la pagina solicita hasta 600 productos destacados de Syscom. El endpoint acepta `?limit=` hasta 1200 para ampliar el volumen sin cambiar el frontend. Primero consulta destacados globales/topseller y los clasifica por familia; si Syscom no devuelve suficiente volumen, usa busquedas por familia como respaldo.
