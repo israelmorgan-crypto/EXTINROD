@@ -39,8 +39,21 @@ const seedTasks = [
   { tarea: "Validar stock de detectores", empleado: "Taller", estado: "Pendiente" },
 ];
 
-const customers = JSON.parse(localStorage.getItem("extinrod_customers") || "null") || seedCustomers;
-const followUps = JSON.parse(localStorage.getItem("extinrod_followups") || "null") || seedFollowUps;
+function readStoredArray(key, fallback) {
+  try {
+    const storedValue = localStorage.getItem(key);
+    if (!storedValue) return [...fallback];
+
+    const parsedValue = JSON.parse(storedValue);
+    return Array.isArray(parsedValue) ? parsedValue : [...fallback];
+  } catch {
+    localStorage.removeItem(key);
+    return [...fallback];
+  }
+}
+
+const customers = readStoredArray("extinrod_customers", seedCustomers);
+const followUps = readStoredArray("extinrod_followups", seedFollowUps);
 const quotes = seedQuotes;
 const tasks = seedTasks;
 
@@ -62,6 +75,16 @@ const quoteList = document.querySelector("#quoteList");
 const taskList = document.querySelector("#taskList");
 const searchInput = document.querySelector("#searchInput");
 const dialog = document.querySelector("#followDialog");
+
+window.addEventListener("error", (event) => {
+  setAuthError(`Error de carga del CRM: ${event.message}`);
+  setAuthMessage("No se pudo preparar el acceso.");
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  setAuthError(`Error de conexion del CRM: ${event.reason?.message || event.reason || "respuesta no disponible"}`);
+  setAuthMessage("No se pudo completar la accion.");
+});
 
 function setLockedState(isActive) {
   document.body.classList.toggle("locked", !isActive);
