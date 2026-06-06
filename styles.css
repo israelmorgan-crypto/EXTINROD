@@ -782,6 +782,200 @@ h3 {
   font-weight: 800;
 }
 
+.about-hero {
+  min-height: clamp(360px, 48vw, 560px);
+  display: grid;
+  align-content: end;
+  background:
+    linear-gradient(90deg, rgba(12, 15, 16, 0.92) 0%, rgba(12, 15, 16, 0.72) 48%, rgba(12, 15, 16, 0.25) 100%),
+    url("assets/bg-extinrod-operacion.jpg") center / cover no-repeat,
+    var(--charcoal);
+}
+
+.about-hero h1,
+.about-hero p {
+  max-width: 880px;
+}
+
+.about-intro,
+.about-commitment {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(280px, 1.1fr);
+  gap: clamp(24px, 5vw, 64px);
+  align-items: start;
+  background: var(--white);
+}
+
+.about-intro h2,
+.about-commitment h2 {
+  max-width: 760px;
+}
+
+.about-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: var(--line);
+}
+
+.about-metrics article {
+  min-height: 180px;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  padding: clamp(22px, 3vw, 34px);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 246, 242, 0.96)),
+    var(--white);
+}
+
+.about-metrics strong {
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.4vw, 4rem);
+  line-height: 1;
+}
+
+.about-metrics span {
+  color: var(--steel);
+  font-weight: 900;
+}
+
+.section-heading {
+  max-width: 880px;
+}
+
+.about-divisions {
+  display: grid;
+  gap: 28px;
+  background: var(--paper);
+}
+
+.division-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.division-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 330px;
+  display: grid;
+  align-content: end;
+  gap: 12px;
+  padding: clamp(22px, 3vw, 34px);
+  border-radius: 8px;
+  color: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.division-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(255, 255, 255, 0.2), transparent 28%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.42));
+}
+
+.division-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.division-card span {
+  color: rgba(255, 255, 255, 0.74);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.division-card h3 {
+  max-width: 340px;
+  margin: 0;
+  color: var(--white);
+  font-size: clamp(1.25rem, 2.4vw, 2rem);
+  line-height: 1.08;
+}
+
+.division-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.55;
+}
+
+.division-fire {
+  background: linear-gradient(135deg, #a91422, #5d1018);
+}
+
+.division-civil {
+  background: linear-gradient(135deg, #173d60, #0d253d);
+}
+
+.division-build {
+  background: linear-gradient(135deg, #17613d, #0b3b25);
+}
+
+.commitment-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.commitment-grid article {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(36, 87, 109, 0.12);
+  border-radius: 8px;
+  background: rgba(247, 246, 242, 0.72);
+}
+
+.commitment-grid strong {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.commitment-grid span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.about-sectors {
+  display: grid;
+  gap: 24px;
+  background:
+    linear-gradient(135deg, rgba(36, 40, 40, 0.96), rgba(24, 55, 72, 0.94)),
+    var(--charcoal);
+  color: var(--white);
+}
+
+.about-sectors .section-heading h2 {
+  color: var(--white);
+}
+
+.sector-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sector-list span {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 900;
+}
+
 .service-detail {
   display: grid;
   grid-template-columns: minmax(220px, 0.7fr) minmax(280px, 1.3fr);
@@ -2147,6 +2341,8 @@ h3 {
 
   .intro-grid,
   .split,
+  .about-intro,
+  .about-commitment,
   .cta-strip,
   .contact-layout,
   .service-detail,
@@ -2154,6 +2350,16 @@ h3 {
   .solutions-showcase,
   .account-access {
     grid-template-columns: 1fr;
+  }
+
+  .about-metrics,
+  .division-grid,
+  .commitment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .division-card {
+    min-height: 280px;
   }
 
   .account-access {
