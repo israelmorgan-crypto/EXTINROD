@@ -5,7 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex,nofollow,noarchive" />
     <title>CRM EXTINROD</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260605-login-glass" />
+    <style>
+      [hidden] { display: none !important; }
+      body.locked { margin: 0; min-height: 100vh; display: block; font-family: Arial, Helvetica, sans-serif; background: #0b1a24; overflow-x: hidden; }
+      body.locked [data-private] { display: none !important; }
+      body.locked .login-screen { position: relative; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: clamp(18px, 5vw, 48px); background: #0b1a24; }
+      body.locked .login-screen::after { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(circle at center, rgba(8, 18, 26, 0.12), rgba(8, 18, 26, 0.52) 56%, rgba(8, 18, 26, 0.9)), linear-gradient(90deg, rgba(15, 38, 53, 0.76), rgba(15, 38, 53, 0.32)); }
+      body.locked .login-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+      body.locked .login-card { position: relative; z-index: 2; width: min(430px, 100%); display: grid; gap: 16px; padding: clamp(24px, 5vw, 36px); border: 1px solid rgba(255,255,255,.3); border-radius: 14px; color: #fff; background: rgba(8,21,31,.68); backdrop-filter: blur(18px) saturate(120%); box-shadow: 0 30px 90px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.14); box-sizing: border-box; }
+      body.locked .login-brand img { width: min(170px, 58vw); filter: brightness(0) invert(1); }
+      body.locked .login-card h1 { margin: 0; color: #fff; font-size: clamp(2rem, 8vw, 2.8rem); line-height: 1; }
+      body.locked .login-card p { margin-top: 0; }
+      body.locked .login-copy { color: rgba(255,255,255,.72); line-height: 1.6; }
+      body.locked .eyebrow { margin: 0 0 8px; color: #b8892e; font-size: .78rem; font-weight: 900; text-transform: uppercase; }
+      body.locked .login-card label { display: grid; gap: 7px; color: rgba(255,255,255,.78); font-weight: 900; }
+      body.locked .login-card input { width: 100%; padding: 12px; border: 1px solid rgba(255,255,255,.24); border-radius: 6px; color: #fff; background: rgba(255,255,255,.12); font: inherit; box-sizing: border-box; }
+      body.locked .primary-action { min-height: 42px; padding: 0 16px; border: 0; border-radius: 6px; color: #fff; background: #b51f2b; font-weight: 900; cursor: pointer; }
+      body.locked .login-status, body.locked .login-error { min-height: 20px; margin: 0; padding: 10px 12px; border-radius: 6px; font-size: .9rem; line-height: 1.35; }
+      body.locked .login-status { color: rgba(255,255,255,.78); background: rgba(255,255,255,.1); }
+      body.locked .login-error { color: #ffb5bd; font-weight: 800; background: rgba(181,31,43,.22); }
+      body.locked .login-error:empty { display: none; }
+    </style>
   </head>
   <body class="locked">
     <section class="login-screen" id="loginScreen" aria-label="Acceso al CRM">
@@ -132,6 +153,6 @@
     </dialog>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=20260605-login-glass"></script>
   </body>
 </html>
