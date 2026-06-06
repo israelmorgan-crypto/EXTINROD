@@ -10,7 +10,7 @@
         window.location.replace("https://extinrod.mx/crm");
       }
     </script>
-    <link rel="stylesheet" href="styles.css?v=20260605-login-glass" />
+    <link rel="stylesheet" href="/crm/styles.css?v=20260606-absolute-paths" />
     <style>
       [hidden] { display: none !important; }
       body.locked { margin: 0; min-height: 100vh; display: block; font-family: Arial, Helvetica, sans-serif; background: #0b1a24; overflow-x: hidden; }
@@ -35,10 +35,10 @@
   </head>
   <body class="locked">
     <section class="login-screen" id="loginScreen" aria-label="Acceso al CRM">
-      <img class="login-bg" src="../assets/crm-login-engineering.png" alt="" aria-hidden="true" />
+      <img class="login-bg" src="/assets/crm-login-engineering.png" alt="" aria-hidden="true" />
       <form class="login-card" id="loginForm">
-        <a class="login-brand" href="../index.html">
-          <img src="../assets/logo-extinrod.png" alt="EXTINROD" />
+        <a class="login-brand" href="/">
+          <img src="/assets/logo-extinrod.png" alt="EXTINROD" />
         </a>
         <div class="login-heading">
           <p class="eyebrow">Acceso interno</p>
@@ -58,8 +58,8 @@
     </section>
 
     <aside class="sidebar" data-private hidden>
-      <a class="brand" href="../index.html">
-        <img src="../assets/logo-extinrod.png" alt="EXTINROD" />
+      <a class="brand" href="/">
+        <img src="/assets/logo-extinrod.png" alt="EXTINROD" />
       </a>
       <nav aria-label="CRM">
         <a class="active" href="#dashboard">Dashboard</a>
@@ -177,6 +177,6 @@
         }, 2500);
       }, { capture: true });
     </script>
-    <script src="engine.js?v=20260606-server-login"></script>
+    <script src="/crm/engine.js?v=20260606-absolute-paths"></script>
   </body>
 </html>
