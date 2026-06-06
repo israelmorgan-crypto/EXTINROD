@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Libre+Baskerville:wght@700&display=swap");
+
 :root {
   --ink: #171717;
   --muted: #62676b;
@@ -11,6 +13,8 @@
   --gold: #b8892e;
   --charcoal: #242828;
   --shadow: 0 18px 40px rgba(23, 23, 23, 0.12);
+  --font-sans: "Inter", Arial, Helvetica, sans-serif;
+  --font-display: "Libre Baskerville", Georgia, serif;
 }
 
 * {
@@ -25,7 +29,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--paper);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
 }
 
 a {
@@ -813,14 +817,24 @@ h3 {
 
 .catalog-heading {
   display: grid;
-  gap: 8px;
-  margin-bottom: 22px;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: clamp(20px, 3vw, 34px);
+  border: 1px solid rgba(36, 87, 109, 0.1);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 250, 0.94)),
+    radial-gradient(circle at 100% 0%, rgba(181, 31, 43, 0.12), transparent 34%);
+  box-shadow: 0 20px 46px rgba(18, 43, 60, 0.08);
 }
 
 .catalog-heading h2 {
   margin: 0;
   color: var(--ink);
-  font-size: clamp(1.55rem, 3vw, 2.4rem);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3.2vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
 .commerce-toolbar h2 {
@@ -829,9 +843,9 @@ h3 {
 }
 
 .catalog-count {
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 0.94rem;
+  margin-top: 2px;
+  color: #7d8c94;
+  font-size: 0.88rem;
   font-weight: 800;
 }
 
@@ -915,27 +929,45 @@ h3 {
   display: grid;
   grid-template-columns: minmax(240px, 1fr) minmax(190px, 280px);
   gap: 14px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid rgba(36, 87, 109, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 14px 32px rgba(18, 43, 60, 0.06);
 }
 
 .search-box {
   display: grid;
   gap: 8px;
-  color: var(--muted);
-  font-size: 0.88rem;
+  color: #75838a;
+  font-size: 0.78rem;
   font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .search-box input,
 .search-box select {
   width: 100%;
-  min-height: 46px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
+  min-height: 50px;
+  padding: 0 16px;
+  border: 1px solid rgba(36, 87, 109, 0.16);
   border-radius: 6px;
   background: var(--white);
   color: var(--ink);
-  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.94rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.search-box input:focus,
+.search-box select:focus {
+  outline: 2px solid rgba(181, 31, 43, 0.16);
+  border-color: rgba(181, 31, 43, 0.38);
 }
 
 .subcategory-nav {
@@ -995,18 +1027,25 @@ h3 {
 
 .catalog-landing-copy {
   display: grid;
-  gap: 8px;
+  gap: 10px;
+  padding: 4px 0 2px;
 }
 
 .catalog-landing-copy h3 {
   margin: 0;
-  font-size: clamp(1.55rem, 3vw, 2.6rem);
-  line-height: 1.04;
+  max-width: 900px;
+  color: #1d2b34;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.3vw, 2.15rem);
+  line-height: 1.18;
+  letter-spacing: 0;
 }
 
 .catalog-landing-copy p:not(.eyebrow) {
   color: var(--muted);
-  line-height: 1.55;
+  max-width: 860px;
+  font-size: 0.95rem;
+  line-height: 1.6;
 }
 
 .catalog-family-grid {
