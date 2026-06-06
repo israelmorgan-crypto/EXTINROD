@@ -19,3 +19,16 @@ Sitio publico de EXTINROD y base inicial del CRM interno.
 ## Siguiente etapa
 
 Conectar el CRM a Supabase Auth y PostgreSQL para usuarios, clientes, seguimientos, cotizaciones y productividad.
+
+## Catalogo Syscom
+
+El endpoint `api/products` usa `SYSCOM_API_TOKEN` en Vercel para consultar productos destacados por familia:
+
+- Incendios
+- Voceo
+- Data
+- Climas
+- Video vigilancia
+- Control de accesos
+
+Sin sesion de cliente, el catalogo no expone precios. Con sesion activa, el endpoint puede incluir precio de lista en MXN para adjuntarlo a la solicitud de cotizacion.

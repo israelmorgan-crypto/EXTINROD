@@ -1022,6 +1022,14 @@ h3 {
   line-height: 1.35;
 }
 
+.cart-line small {
+  display: block;
+  margin-top: 5px;
+  color: var(--red);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
 .cart-actions {
   display: grid;
   grid-template-columns: 30px 28px 30px;

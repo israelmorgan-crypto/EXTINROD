@@ -145,7 +145,7 @@ let products = [
   },
 ];
 
-const categories = [
+let categories = [
   {
     id: "incendios",
     name: "Incendios",
@@ -197,6 +197,7 @@ const quoteMessage = document.querySelector("#quoteMessage");
 const quoteStatus = document.querySelector("#quoteStatus");
 let activeCategory = location.hash ? location.hash.slice(1) : "all";
 let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
+let catalogPricesVisible = false;
 
 const clientRegisterForm = document.querySelector("#clientRegisterForm");
 const clientLoginForm = document.querySelector("#clientLoginForm");
@@ -349,9 +350,11 @@ let activeSlide = 0;
 let slideTimer;
 
 function money(value) {
+  if (!Number.isFinite(Number(value))) return "Por cotizar";
+
   return new Intl.NumberFormat("es-MX", {
     style: "currency",
-    currency: "USD",
+    currency: "MXN",
   }).format(value);
 }
 
@@ -410,7 +413,7 @@ function renderProducts() {
               ${product.stock > 0 ? `${product.stock} disponibles` : "Sin stock"}
             </span>
             <div class="price-row">
-              <span class="price">${money(product.price)}</span>
+              <span class="price">Precio al cotizar</span>
               <button class="detail-link" type="button" data-add-product="${product.model}">Agregar</button>
             </div>
           </div>
@@ -435,6 +438,8 @@ function updateCart() {
     return;
   }
 
+  const session = getClientSession();
+  const showCartPrices = Boolean(session?.access_token);
   cartItems.innerHTML = quoteCart
     .map(
       (item) => `
@@ -442,6 +447,7 @@ function updateCart() {
           <div>
             <strong>${item.model}</strong>
             <span>${item.name}</span>
+            ${showCartPrices && item.listPriceMxn ? `<small>Precio lista: ${money(item.listPriceMxn)} MXN</small>` : "<small>Precio al validar cotizacion</small>"}
           </div>
           <div class="cart-actions">
             <button type="button" data-dec-product="${item.model}">-</button>
@@ -457,6 +463,30 @@ function updateCart() {
   quoteWhatsApp.href = `https://wa.me/525536191672?text=Hola%20EXTINROD,%20quiero%20cotizar:%0A${lines}`;
 }
 
+function renderCategoryVisuals() {
+  if (!categoryVisuals) return;
+
+  categoryVisuals.innerHTML = categories
+    .map(
+      (category) => `
+        <button class="visual-category" data-category="${category.id}" type="button">
+          <img src="${category.image}" alt="${category.name}" loading="lazy" />
+          <span>${category.name}</span>
+          <small>${category.summary}</small>
+        </button>
+      `
+    )
+    .join("");
+
+  categoryVisuals.querySelectorAll(".visual-category").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeCategory = button.dataset.category;
+      history.replaceState(null, "", `#${activeCategory}`);
+      renderProducts();
+    });
+  });
+}
+
 function addToCart(model) {
   const product = products.find((item) => item.model === model);
   if (!product) return;
@@ -464,7 +494,18 @@ function addToCart(model) {
   if (existing) {
     existing.qty += 1;
   } else {
-    quoteCart.push({ model: product.model, name: product.name, brand: product.brand, qty: 1 });
+    quoteCart.push({
+      model: product.model,
+      sku: product.model,
+      name: product.name,
+      brand: product.brand,
+      qty: 1,
+      price: product.listPriceMxn || product.price || null,
+      listPriceMxn: product.listPriceMxn || product.price || null,
+      stock: product.stock,
+      source: product.source || "catalog",
+      externalId: product.externalId || "",
+    });
   }
   persistCart();
   updateCart();
@@ -482,13 +523,22 @@ function changeCartQty(model, delta) {
 
 async function loadProductsFromApi() {
   try {
-    const response = await fetch("/api/products", { headers: { Accept: "application/json" } });
+    const session = getClientSession();
+    const headers = { Accept: "application/json" };
+    if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
+
+    const response = await fetch("/api/products", { headers });
     if (!response.ok) return;
 
     const catalog = await response.json();
     if (!Array.isArray(catalog.products) || catalog.products.length === 0) return;
 
     products = catalog.products;
+    catalogPricesVisible = Boolean(catalog.pricesVisible);
+    if (Array.isArray(catalog.categories) && catalog.categories.length) {
+      categories = catalog.categories;
+      renderCategoryVisuals();
+    }
     renderProducts();
     updateCart();
   } catch {
@@ -497,27 +547,7 @@ async function loadProductsFromApi() {
 }
 
 if (grid && searchInput) {
-  if (categoryVisuals) {
-    categoryVisuals.innerHTML = categories
-      .map(
-        (category) => `
-          <button class="visual-category" data-category="${category.id}" type="button">
-            <img src="${category.image}" alt="${category.name}" loading="lazy" />
-            <span>${category.name}</span>
-            <small>${category.summary}</small>
-          </button>
-        `
-      )
-      .join("");
-
-    categoryVisuals.querySelectorAll(".visual-category").forEach((button) => {
-      button.addEventListener("click", () => {
-        activeCategory = button.dataset.category;
-        history.replaceState(null, "", `#${activeCategory}`);
-        renderProducts();
-      });
-    });
-  }
+  renderCategoryVisuals();
 
   categoryButtons.forEach((button) => {
     button.addEventListener("click", () => {
