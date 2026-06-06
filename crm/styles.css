@@ -163,6 +163,12 @@ body.locked .login-screen {
   color: var(--muted);
 }
 
+.session-label {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: var(--gold);

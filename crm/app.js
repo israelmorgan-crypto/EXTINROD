@@ -39,21 +39,20 @@ const seedTasks = [
   { tarea: "Validar stock de detectores", empleado: "Taller", estado: "Pendiente" },
 ];
 
-const authConfig = {
-  email: "admin@extinrod.com",
-  passwordHash: "4a1d2ade5dd771d8702998e619ca661fd769d57bb783bcee0ecc01bdfb6f0b06",
-};
-
 const customers = JSON.parse(localStorage.getItem("extinrod_customers") || "null") || seedCustomers;
 const followUps = JSON.parse(localStorage.getItem("extinrod_followups") || "null") || seedFollowUps;
 const quotes = seedQuotes;
 const tasks = seedTasks;
+
+let supabaseClient;
+let currentEmployee;
 
 const loginForm = document.querySelector("#loginForm");
 const loginEmail = document.querySelector("#loginEmail");
 const loginPassword = document.querySelector("#loginPassword");
 const loginError = document.querySelector("#loginError");
 const logoutButton = document.querySelector("#logoutButton");
+const sessionLabel = document.querySelector("#sessionLabel");
 const customerRows = document.querySelector("#customerRows");
 const followUpList = document.querySelector("#followUpList");
 const quoteList = document.querySelector("#quoteList");
@@ -61,14 +60,7 @@ const taskList = document.querySelector("#taskList");
 const searchInput = document.querySelector("#searchInput");
 const dialog = document.querySelector("#followDialog");
 
-async function sha256(value) {
-  const data = new TextEncoder().encode(value);
-  const buffer = await crypto.subtle.digest("SHA-256", data);
-  return [...new Uint8Array(buffer)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
-
-function setLockedState() {
-  const isActive = sessionStorage.getItem("extinrod_crm_session") === "active";
+function setLockedState(isActive) {
   document.body.classList.toggle("locked", !isActive);
 }
 
@@ -129,27 +121,6 @@ dialog.addEventListener("submit", () => {
   dialog.close();
 });
 
-loginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const email = loginEmail.value.trim().toLowerCase();
-  const passwordHash = await sha256(loginPassword.value);
-
-  if (email === authConfig.email && passwordHash === authConfig.passwordHash) {
-    sessionStorage.setItem("extinrod_crm_session", "active");
-    loginPassword.value = "";
-    loginError.textContent = "";
-    setLockedState();
-    return;
-  }
-
-  loginError.textContent = "Correo o contrasena incorrectos.";
-});
-
-logoutButton.addEventListener("click", () => {
-  sessionStorage.removeItem("extinrod_crm_session");
-  setLockedState();
-});
-
 function renderAll() {
   renderCustomers();
   renderMiniCards(followUpList, followUps, (item) => `<strong>${item.cliente}</strong><span>${item.fecha} - ${item.accion}</span>`);
@@ -158,5 +129,82 @@ function renderAll() {
   updateKpis();
 }
 
-setLockedState();
+async function loadSupabaseConfig() {
+  const response = await fetch("/api/config", { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new Error("No se pudo leer la configuracion.");
+  return response.json();
+}
+
+async function loadEmployeeProfile() {
+  const { data, error } = await supabaseClient.from("current_employee").select("*").maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error("Este correo no esta autorizado en el CRM.");
+  currentEmployee = data;
+  sessionLabel.textContent = `${data.full_name} - ${data.role}`;
+}
+
+async function initializeAuth() {
+  setLockedState(false);
+  document.body.classList.add("locked");
+
+  try {
+    const config = await loadSupabaseConfig();
+    if (!config.supabase?.configured) {
+      loginError.textContent = "Falta configurar Supabase en Vercel.";
+      return;
+    }
+
+    if (!window.supabase?.createClient) {
+      loginError.textContent = "No se pudo cargar Supabase Auth.";
+      return;
+    }
+
+    supabaseClient = window.supabase.createClient(config.supabase.url, config.supabase.anonKey);
+    const { data } = await supabaseClient.auth.getSession();
+
+    if (data.session) {
+      await loadEmployeeProfile();
+      setLockedState(true);
+    }
+  } catch (error) {
+    loginError.textContent = error.message || "No se pudo iniciar Supabase Auth.";
+  }
+}
+
+loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  loginError.textContent = "";
+
+  if (!supabaseClient) {
+    loginError.textContent = "Supabase aun no esta configurado.";
+    return;
+  }
+
+  const email = loginEmail.value.trim().toLowerCase();
+  const password = loginPassword.value;
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    loginError.textContent = "Correo o contrasena incorrectos.";
+    return;
+  }
+
+  try {
+    await loadEmployeeProfile();
+    loginPassword.value = "";
+    setLockedState(true);
+  } catch (profileError) {
+    await supabaseClient.auth.signOut();
+    loginError.textContent = profileError.message;
+  }
+});
+
+logoutButton.addEventListener("click", async () => {
+  if (supabaseClient) await supabaseClient.auth.signOut();
+  currentEmployee = undefined;
+  sessionLabel.textContent = "";
+  setLockedState(false);
+});
+
 renderAll();
+initializeAuth();

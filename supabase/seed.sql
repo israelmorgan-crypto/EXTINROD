@@ -1,6 +1,7 @@
 -- EXTINROD CRM - datos iniciales del equipo.
 -- Ejecutar despues de `schema.sql`.
--- Cuando se creen usuarios en Supabase Auth, vincular cada registro con auth.users.id en employees.user_id.
+-- Cuando se creen usuarios en Supabase Auth, el trigger de `schema.sql`
+-- vincula cada registro con auth.users.id usando el correo.
 
 insert into public.employees (full_name, email, role, active)
 values

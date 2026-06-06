@@ -160,15 +160,86 @@ alter table public.quote_requests enable row level security;
 alter table public.quote_request_items enable row level security;
 alter table public.maintenance_assets enable row level security;
 
+create or replace function public.link_employee_auth_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.employees
+  set user_id = new.id
+  where lower(email) = lower(new.email)
+    and (user_id is null or user_id = new.id);
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_link_employee on auth.users;
+
+create trigger on_auth_user_link_employee
+after insert or update of email on auth.users
+for each row execute function public.link_employee_auth_user();
+
+create or replace function public.is_active_employee()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1
+    from public.employees
+    where user_id = (select auth.uid())
+      and active = true
+  );
+$$;
+
+create or replace function public.current_employee_role()
+returns text
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select role
+  from public.employees
+  where user_id = (select auth.uid())
+    and active = true
+  limit 1;
+$$;
+
 create or replace view public.current_employee as
 select *
 from public.employees
 where user_id = (select auth.uid())
   and active = true;
 
+drop policy if exists "Employees read own profile" on public.employees;
+drop policy if exists "Authenticated staff read employees" on public.employees;
+drop policy if exists "Authenticated staff read products" on public.products;
+drop policy if exists "Authenticated staff read customers" on public.customers;
+drop policy if exists "Authenticated staff manage customers" on public.customers;
+drop policy if exists "Authenticated staff manage opportunities" on public.opportunities;
+drop policy if exists "Authenticated staff manage follow ups" on public.follow_ups;
+drop policy if exists "Authenticated staff manage tasks" on public.tasks;
+drop policy if exists "Authenticated staff manage quotes" on public.quotes;
+drop policy if exists "Authenticated staff read quote requests" on public.quote_requests;
+drop policy if exists "Authenticated staff manage quote requests" on public.quote_requests;
+drop policy if exists "Authenticated staff read quote request items" on public.quote_request_items;
+drop policy if exists "Authenticated staff manage quote request items" on public.quote_request_items;
+drop policy if exists "Authenticated staff manage maintenance assets" on public.maintenance_assets;
+
 create policy "Employees read own profile"
   on public.employees for select
   using (user_id = (select auth.uid()));
+
+create policy "Authenticated staff read employees"
+  on public.employees for select
+  to authenticated
+  using (public.is_active_employee());
 
 create policy "Authenticated staff read products"
   on public.products for select
@@ -178,14 +249,62 @@ create policy "Authenticated staff read products"
 create policy "Authenticated staff read customers"
   on public.customers for select
   to authenticated
-  using (exists (select 1 from public.employees e where e.user_id = (select auth.uid()) and e.active = true));
+  using (public.is_active_employee());
+
+create policy "Authenticated staff manage customers"
+  on public.customers for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
+
+create policy "Authenticated staff manage opportunities"
+  on public.opportunities for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
+
+create policy "Authenticated staff manage follow ups"
+  on public.follow_ups for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
+
+create policy "Authenticated staff manage tasks"
+  on public.tasks for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
+
+create policy "Authenticated staff manage quotes"
+  on public.quotes for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
 
 create policy "Authenticated staff read quote requests"
   on public.quote_requests for select
   to authenticated
-  using (exists (select 1 from public.employees e where e.user_id = (select auth.uid()) and e.active = true));
+  using (public.is_active_employee());
+
+create policy "Authenticated staff manage quote requests"
+  on public.quote_requests for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
 
 create policy "Authenticated staff read quote request items"
   on public.quote_request_items for select
   to authenticated
-  using (exists (select 1 from public.employees e where e.user_id = (select auth.uid()) and e.active = true));
+  using (public.is_active_employee());
+
+create policy "Authenticated staff manage quote request items"
+  on public.quote_request_items for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
+
+create policy "Authenticated staff manage maintenance assets"
+  on public.maintenance_assets for all
+  to authenticated
+  using (public.is_active_employee())
+  with check (public.is_active_employee());
