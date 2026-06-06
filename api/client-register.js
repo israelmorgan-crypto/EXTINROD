@@ -27,7 +27,14 @@ async function supabaseFetch(path, options = {}) {
   });
 }
 
-async function supabaseSignup(email, password, metadata) {
+function getAccountRedirectUrl(request) {
+  const forwardedHost = String(request.headers["x-forwarded-host"] || "").split(",")[0].trim();
+  const host = forwardedHost || request.headers.host || "extinrod.mx";
+  const protocol = String(request.headers["x-forwarded-proto"] || "https").split(",")[0].trim();
+  return `${protocol}://${host}/cuenta`;
+}
+
+async function supabaseSignup(request, email, password, metadata) {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
@@ -36,7 +43,7 @@ async function supabaseSignup(email, password, metadata) {
   }
 
   const signupUrl = new URL(`${supabaseUrl}/auth/v1/signup`);
-  signupUrl.searchParams.set("redirect_to", "https://extinrod.com/cuenta");
+  signupUrl.searchParams.set("redirect_to", getAccountRedirectUrl(request));
 
   return fetch(signupUrl, {
     method: "POST",
@@ -75,7 +82,7 @@ module.exports = async function handler(request, response) {
       return;
     }
 
-    const userResponse = await supabaseSignup(email, password, {
+    const userResponse = await supabaseSignup(request, email, password, {
       full_name: contactName,
       company_name: companyName,
       phone,

@@ -256,6 +256,11 @@ const clientAuthMessage = document.querySelector("#clientAuthMessage");
 const oauthButtons = document.querySelectorAll("[data-oauth-provider]");
 let browserSupabaseClient;
 
+function accountUrl() {
+  const origin = window.location.origin.includes("localhost") ? "https://extinrod.mx" : window.location.origin;
+  return `${origin}/cuenta`;
+}
+
 function getClientSession() {
   try {
     return JSON.parse(sessionStorage.getItem("extinrod_client_session") || "null");
@@ -322,7 +327,7 @@ async function startClientOAuth(provider) {
     const { error } = await client.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: "https://extinrod.com/cuenta",
+        redirectTo: accountUrl(),
         skipBrowserRedirect: false,
       },
     });
@@ -906,7 +911,7 @@ async function toggleWishlist(model) {
     wishlistDrawer?.classList.add("open");
     wishlistDrawer?.setAttribute("aria-hidden", "false");
     window.setTimeout(() => {
-      window.location.href = "https://extinrod.com/cuenta";
+      window.location.href = accountUrl();
     }, 1000);
     return;
   }
@@ -1169,7 +1174,7 @@ if (grid && searchInput) {
     if (!session?.access_token) {
       setFormStatus(quoteStatus, "Inicia sesion o crea tu cuenta para generar la cotizacion.", "error");
       window.setTimeout(() => {
-        window.location.href = "https://extinrod.com/cuenta";
+        window.location.href = accountUrl();
       }, 900);
       return;
     }
@@ -1266,7 +1271,7 @@ if (productDetail && !grid) {
     if (!session?.access_token) {
       setFormStatus(quoteStatus, "Inicia sesion o crea tu cuenta para generar la cotizacion.", "error");
       window.setTimeout(() => {
-        window.location.href = "https://extinrod.com/cuenta";
+        window.location.href = accountUrl();
       }, 900);
       return;
     }
