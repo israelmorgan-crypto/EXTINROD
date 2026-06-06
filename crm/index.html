@@ -154,6 +154,29 @@
 
     <script>
       window.extinrodCrmReady = false;
+      window.extinrodPendingLogin = false;
+      window.loadCrmFallback = function () {
+        var status = document.querySelector("#authStatus");
+        var error = document.querySelector("#loginError");
+        var fallbackScript = document.createElement("script");
+
+        if (status) status.textContent = "Cargando motor del CRM sin cache...";
+        fallbackScript.src = "app.js";
+        fallbackScript.onload = function () {
+          if (status) status.textContent = "Motor del CRM cargado. Intenta entrar de nuevo.";
+          if (window.extinrodPendingLogin) {
+            window.setTimeout(function () {
+              document.querySelector("#loginSubmit")?.click();
+            }, 100);
+          }
+        };
+        fallbackScript.onerror = function () {
+          if (status) status.textContent = "No se pudo cargar el motor del CRM.";
+          if (error) error.textContent = "Abre el CRM desde https://extinrod.mx/crm. Si estas en archivo local, algunos navegadores bloquean app.js.";
+        };
+        document.body.appendChild(fallbackScript);
+      };
+
       document.querySelector("#loginForm")?.addEventListener("submit", function (event) {
         event.preventDefault();
         var status = document.querySelector("#authStatus");
@@ -162,17 +185,18 @@
         if (status) status.textContent = "Procesando acceso...";
         if (error) error.textContent = "";
         if (button) button.textContent = "Validando...";
+        window.extinrodPendingLogin = true;
 
         window.setTimeout(function () {
           if (!window.extinrodCrmReady) {
             if (status) status.textContent = "El formulario respondio, pero no cargo el motor del CRM.";
-            if (error) error.textContent = "Recarga con Ctrl + F5. Si continua igual, el navegador esta bloqueando el JavaScript del CRM.";
+            if (error) error.textContent = "El navegador no cargo app.js. Usa https://extinrod.mx/crm o recarga con Ctrl + F5.";
             if (button) button.textContent = "Entrar al CRM";
           }
         }, 2500);
       }, { capture: true });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20260606-auth-visible"></script>
+    <script src="app.js?v=20260606-auth-loader" onerror="window.loadCrmFallback()"></script>
   </body>
 </html>
