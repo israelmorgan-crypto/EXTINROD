@@ -254,6 +254,12 @@ async function initializeAuth() {
   clearAuthError();
   setAuthMessage("Conectando con Supabase...");
 
+  if (window.location.protocol === "file:") {
+    setAuthError("Estas abriendo el CRM como archivo local. Usa https://extinrod.mx/crm para que funcionen Supabase y Vercel.");
+    setAuthMessage("CRM abierto fuera de produccion.");
+    return;
+  }
+
   try {
     const config = await withTimeout(loadSupabaseConfig(), 10000, "No se pudo conectar con la configuracion del CRM.");
     if (!config.supabase?.configured) {
