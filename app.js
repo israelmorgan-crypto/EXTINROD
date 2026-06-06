@@ -1,4 +1,4 @@
-const products = [
+let products = [
   {
     category: "incendios",
     categoryName: "Incendios",
@@ -334,6 +334,22 @@ function changeCartQty(model, delta) {
   updateCart();
 }
 
+async function loadProductsFromApi() {
+  try {
+    const response = await fetch("/api/products", { headers: { Accept: "application/json" } });
+    if (!response.ok) return;
+
+    const catalog = await response.json();
+    if (!Array.isArray(catalog.products) || catalog.products.length === 0) return;
+
+    products = catalog.products;
+    renderProducts();
+    updateCart();
+  } catch {
+    renderProducts();
+  }
+}
+
 if (grid && searchInput) {
   if (categoryVisuals) {
     categoryVisuals.innerHTML = categories
@@ -391,6 +407,7 @@ if (grid && searchInput) {
 
   renderProducts();
   updateCart();
+  loadProductsFromApi();
 }
 
 function showSlide(index) {
