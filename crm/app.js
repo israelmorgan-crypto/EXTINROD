@@ -59,6 +59,7 @@ const tasks = seedTasks;
 
 let supabaseClient;
 let currentEmployee;
+const apiBaseUrl = window.location.protocol === "file:" ? "https://extinrod.mx" : "";
 
 const loginForm = document.querySelector("#loginForm");
 const loginEmail = document.querySelector("#loginEmail");
@@ -196,7 +197,7 @@ function renderAll() {
 }
 
 async function loadSupabaseConfig() {
-  const response = await fetch("/api/config", { headers: { Accept: "application/json" } });
+  const response = await fetch(`${apiBaseUrl}/api/config`, { headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error("No se pudo leer la configuracion.");
   return response.json();
 }
@@ -214,7 +215,7 @@ async function linkEmployeeProfile() {
   const token = data.session?.access_token;
   if (!token) throw new Error("No se encontro una sesion activa.");
 
-  const response = await fetch("/api/link-employee", {
+  const response = await fetch(`${apiBaseUrl}/api/link-employee`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -256,12 +257,6 @@ async function initializeAuth() {
   clearDashboard();
   clearAuthError();
   setAuthMessage("Conectando con Supabase...");
-
-  if (window.location.protocol === "file:") {
-    setAuthError("Estas abriendo el CRM como archivo local. Usa https://extinrod.mx/crm para que funcionen Supabase y Vercel.");
-    setAuthMessage("CRM abierto fuera de produccion.");
-    return;
-  }
 
   try {
     const config = await withTimeout(loadSupabaseConfig(), 10000, "No se pudo conectar con la configuracion del CRM.");
