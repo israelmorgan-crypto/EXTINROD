@@ -119,6 +119,45 @@ function withTimeout(promise, ms, message) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
 }
 
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const existingScript = document.querySelector(`script[src="${src}"]`);
+    if (existingScript) {
+      existingScript.addEventListener("load", resolve, { once: true });
+      existingScript.addEventListener("error", reject, { once: true });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+async function ensureSupabaseLibrary() {
+  if (window.supabase?.createClient) return;
+
+  const sources = [
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
+    "https://unpkg.com/@supabase/supabase-js@2",
+  ];
+
+  for (const source of sources) {
+    try {
+      setAuthMessage("Cargando Supabase Auth...");
+      await withTimeout(loadScript(source), 8000, "La carga de Supabase Auth tardo demasiado.");
+      if (window.supabase?.createClient) return;
+    } catch {
+      // Try the next CDN.
+    }
+  }
+
+  throw new Error("No se pudo cargar Supabase Auth. Prueba en Chrome sin bloqueadores o revisa tu conexion.");
+}
+
 function clearDashboard() {
   customerRows.innerHTML = "";
   followUpList.innerHTML = "";
@@ -265,11 +304,7 @@ async function initializeAuth() {
       return;
     }
 
-    if (!window.supabase?.createClient) {
-      setAuthError("No se pudo cargar Supabase Auth. Revisa conexion o bloqueadores del navegador.");
-      setAuthMessage("Supabase no cargo en el navegador.");
-      return;
-    }
+    await ensureSupabaseLibrary();
 
     supabaseClient = window.supabase.createClient(config.supabase.url, config.supabase.anonKey);
     const { data } = await withTimeout(
