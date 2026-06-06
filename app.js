@@ -186,8 +186,9 @@ let categories = [
 
 const grid = document.querySelector("#productGrid");
 const searchInput = document.querySelector("#searchInput");
-const categoryButtons = document.querySelectorAll(".category-button");
+const categoryNav = document.querySelector("#categoryNav");
 const categoryVisuals = document.querySelector("#categoryVisuals");
+const footerProductNav = document.querySelector("#footerProductNav");
 const cartCount = document.querySelector("#cartCount");
 const quoteDrawer = document.querySelector("#quoteDrawer");
 const cartItems = document.querySelector("#cartItems");
@@ -380,7 +381,7 @@ function filteredProducts() {
 }
 
 function syncButtons() {
-  categoryButtons.forEach((button) => {
+  document.querySelectorAll(".category-button").forEach((button) => {
     button.classList.toggle("active", button.dataset.category === activeCategory);
   });
 }
@@ -487,6 +488,42 @@ function renderCategoryVisuals() {
   });
 }
 
+function selectCategory(categoryId) {
+  activeCategory = categoryId;
+  history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `#${activeCategory}`);
+  renderProducts();
+}
+
+function renderCategoryNav() {
+  if (!categoryNav) return;
+
+  categoryNav.innerHTML = [
+    '<button class="category-button active" data-category="all" type="button">Todos</button>',
+    ...categories.map((category) => `<button class="category-button" data-category="${category.id}" type="button">${category.name}</button>`),
+  ].join("");
+
+  categoryNav.querySelectorAll(".category-button").forEach((button) => {
+    button.addEventListener("click", () => selectCategory(button.dataset.category));
+  });
+
+  syncButtons();
+}
+
+function renderFooterProductNav() {
+  if (!footerProductNav) return;
+
+  footerProductNav.innerHTML = [
+    "<h3>Productos</h3>",
+    ...categories.map((category) => `<a href="#${category.id}">${category.name}</a>`),
+  ].join("");
+}
+
+function renderCategorySurfaces() {
+  renderCategoryNav();
+  renderCategoryVisuals();
+  renderFooterProductNav();
+}
+
 function addToCart(model) {
   const product = products.find((item) => item.model === model);
   if (!product) return;
@@ -537,7 +574,7 @@ async function loadProductsFromApi() {
     catalogPricesVisible = Boolean(catalog.pricesVisible);
     if (Array.isArray(catalog.categories) && catalog.categories.length) {
       categories = catalog.categories;
-      renderCategoryVisuals();
+      renderCategorySurfaces();
     }
     renderProducts();
     updateCart();
@@ -547,15 +584,7 @@ async function loadProductsFromApi() {
 }
 
 if (grid && searchInput) {
-  renderCategoryVisuals();
-
-  categoryButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      activeCategory = button.dataset.category;
-      history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `#${activeCategory}`);
-      renderProducts();
-    });
-  });
+  renderCategorySurfaces();
 
   searchInput.addEventListener("input", renderProducts);
   grid.addEventListener("click", (event) => {

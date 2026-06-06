@@ -8,37 +8,73 @@ const FEATURED_CATEGORIES = [
     id: "incendios",
     name: "Incendios",
     summary: "Deteccion, paneles, estaciones, sirenas y notificacion.",
-    searches: ["panel incendio", "detector humo", "sirena estrobo incendio"],
+    searches: ["panel incendio", "detector humo", "sirena estrobo incendio", "estacion manual incendio", "modulo monitoreo incendio", "fuente nac incendio"],
   },
   {
     id: "voceo",
     name: "Voceo",
     summary: "Audio de evacuacion, amplificadores y mensajes de emergencia.",
-    searches: ["amplificador voceo", "audio evacuacion", "bocina plafon"],
+    searches: ["amplificador voceo", "audio evacuacion", "bocina plafon", "altavoz evacuacion", "microfono voceo", "amplificador linea 70v"],
   },
   {
     id: "data",
     name: "Data",
     summary: "Cableado estructurado, conectividad, racks y redes.",
-    searches: ["cable cat6", "rack gabinete", "patch panel"],
+    searches: ["cable cat6", "rack gabinete", "patch panel", "jack cat6", "patch cord", "fibra optica"],
   },
   {
     id: "climas",
     name: "Climas",
     summary: "Accesorios y soluciones para aire acondicionado tecnico.",
-    searches: ["minisplit", "aire acondicionado", "gabinete aire"],
+    searches: ["minisplit", "aire acondicionado", "gabinete aire", "termostato", "kit instalacion minisplit", "aire acondicionado gabinete"],
   },
   {
     id: "videovigilancia",
     name: "Video vigilancia",
     summary: "Camaras IP, NVR, analiticos, PoE y monitoreo.",
-    searches: ["camara ip hikvision", "nvr poe", "camara domo ip"],
+    searches: ["camara ip hikvision", "nvr poe", "camara domo ip", "camara bullet ip", "disco duro videovigilancia", "switch poe camaras"],
   },
   {
     id: "accesos",
     name: "Control de accesos",
     summary: "Biometria, cerraduras, lectoras y kits de puerta.",
-    searches: ["control acceso", "lector biometrico", "cerradura magnetica"],
+    searches: ["control acceso", "lector biometrico", "cerradura magnetica", "boton salida", "tarjeta proximidad", "torniquete"],
+  },
+  {
+    id: "intrusion",
+    name: "Intrusion y alarma",
+    summary: "Paneles, sensores, contactos, sirenas y monitoreo.",
+    searches: ["panel alarma", "sensor movimiento", "contacto magnetico", "sirena alarma", "teclado alarma", "detector quiebre cristal"],
+  },
+  {
+    id: "redes",
+    name: "Redes",
+    summary: "Switches, routers, WiFi, PoE y conectividad empresarial.",
+    searches: ["switch poe", "router", "access point", "ubiquiti", "mikrotik", "switch administrable"],
+  },
+  {
+    id: "energia",
+    name: "Energia y respaldo",
+    summary: "UPS, baterias, fuentes, reguladores y proteccion electrica.",
+    searches: ["ups", "bateria 12v", "fuente poder 12v", "regulador voltaje", "supresor picos", "panel solar"],
+  },
+  {
+    id: "canalizacion",
+    name: "Canalizacion",
+    summary: "Tuberia, charola, canaleta, cajas y accesorios de instalacion.",
+    searches: ["canaleta", "tuberia conduit", "charola portacable", "caja registro", "abrazadera conduit", "gabinete nema"],
+  },
+  {
+    id: "herramientas",
+    name: "Herramientas",
+    summary: "Probadores, ponchadoras, etiquetado, medicion y montaje.",
+    searches: ["probador cable", "ponchadora", "multimetro", "etiquetadora", "crimpeadora", "herramienta instalacion"],
+  },
+  {
+    id: "automatizacion",
+    name: "Automatizacion",
+    summary: "Sensores, control, relevadores, cerramientos y monitoreo tecnico.",
+    searches: ["sensor temperatura", "relevador", "controlador", "gabinete industrial", "sensor humedad", "monitoreo ambiental"],
   },
 ];
 
@@ -136,6 +172,12 @@ function publicCategoryImage(products, category) {
   return product?.image || "";
 }
 
+function getRequestedLimit(request) {
+  const requested = Number(request.query?.limit || request.query?.max || 0);
+  if (!Number.isFinite(requested) || requested <= 0) return 240;
+  return Math.min(Math.max(requested, 24), 600);
+}
+
 async function syscomFetch(pathname, token) {
   const response = await fetch(`${SYSCOM_BASE_URL}${pathname}`, {
     headers: {
@@ -161,13 +203,18 @@ async function getExchangeRate(token) {
   }
 }
 
-async function getSyscomProducts(token, includePrices) {
+async function getSyscomProducts(token, includePrices, maxProducts) {
   const exchangeRate = await getExchangeRate(token);
   const seen = new Set();
   const products = [];
+  const maxPerCategory = Math.max(12, Math.ceil(maxProducts / FEATURED_CATEGORIES.length));
 
   for (const category of FEATURED_CATEGORIES) {
+    let categoryCount = 0;
+
     for (const search of category.searches) {
+      if (categoryCount >= maxPerCategory || products.length >= maxProducts) break;
+
       const params = new URLSearchParams({
         busqueda: search.replace(/\s+/g, "+"),
         stock: "1",
@@ -175,7 +222,7 @@ async function getSyscomProducts(token, includePrices) {
         pagina: "1",
       });
       const payload = await syscomFetch(`/productos?${params.toString()}`, token);
-      const items = asArray(payload).slice(0, 4);
+      const items = asArray(payload).slice(0, 8);
 
       for (const item of items) {
         const mapped = mapSyscomProduct(item, category, exchangeRate, includePrices);
@@ -183,6 +230,8 @@ async function getSyscomProducts(token, includePrices) {
         if (seen.has(key)) continue;
         seen.add(key);
         products.push(mapped);
+        categoryCount += 1;
+        if (categoryCount >= maxPerCategory || products.length >= maxProducts) break;
       }
     }
   }
@@ -202,6 +251,7 @@ module.exports = async function handler(request, response) {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
   const syscomToken = process.env.SYSCOM_API_TOKEN || process.env.SYSCOM_TOKEN || "";
+  const maxProducts = getRequestedLimit(request);
 
   try {
     const user = await getUserFromToken(supabaseUrl, anonKey, accessToken);
@@ -211,7 +261,7 @@ module.exports = async function handler(request, response) {
 
     if (syscomToken) {
       try {
-        products = await getSyscomProducts(syscomToken, includePrices);
+        products = await getSyscomProducts(syscomToken, includePrices, maxProducts);
         source = "syscom";
       } catch (error) {
         const catalog = readLocalCatalog();
