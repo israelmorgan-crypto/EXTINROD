@@ -48,7 +48,7 @@
         </label>
         <p class="login-status" id="authStatus" role="status">Conectando con Supabase...</p>
         <p class="login-error" id="loginError" role="alert"></p>
-        <button class="primary-action" type="submit">Entrar al CRM</button>
+        <button class="primary-action" id="loginSubmit" type="submit">Entrar al CRM</button>
       </form>
     </section>
 
@@ -152,7 +152,27 @@
       </form>
     </dialog>
 
+    <script>
+      window.extinrodCrmReady = false;
+      document.querySelector("#loginForm")?.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var status = document.querySelector("#authStatus");
+        var error = document.querySelector("#loginError");
+        var button = document.querySelector("#loginSubmit");
+        if (status) status.textContent = "Procesando acceso...";
+        if (error) error.textContent = "";
+        if (button) button.textContent = "Validando...";
+
+        window.setTimeout(function () {
+          if (!window.extinrodCrmReady) {
+            if (status) status.textContent = "El formulario respondio, pero no cargo el motor del CRM.";
+            if (error) error.textContent = "Recarga con Ctrl + F5. Si continua igual, el navegador esta bloqueando el JavaScript del CRM.";
+            if (button) button.textContent = "Entrar al CRM";
+          }
+        }, 2500);
+      }, { capture: true });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js?v=20260606-auth-fileguard"></script>
+    <script src="app.js?v=20260606-auth-visible"></script>
   </body>
 </html>

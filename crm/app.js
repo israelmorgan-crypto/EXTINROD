@@ -76,6 +76,8 @@ const taskList = document.querySelector("#taskList");
 const searchInput = document.querySelector("#searchInput");
 const dialog = document.querySelector("#followDialog");
 
+window.extinrodCrmReady = true;
+
 window.addEventListener("error", (event) => {
   setAuthError(`Error de carga del CRM: ${event.message}`);
   setAuthMessage("No se pudo preparar el acceso.");
@@ -337,6 +339,7 @@ loginForm.addEventListener("submit", async (event) => {
     setAuthMessage("El usuario no tiene perfil autorizado.");
   } finally {
     submitButton.disabled = false;
+    submitButton.textContent = "Entrar al CRM";
   }
 });
 
