@@ -175,8 +175,8 @@ function publicCategoryImage(products, category) {
 
 function getRequestedLimit(request) {
   const requested = Number(request.query?.limit || request.query?.max || 0);
-  if (!Number.isFinite(requested) || requested <= 0) return 240;
-  return Math.min(Math.max(requested, 24), 600);
+  if (!Number.isFinite(requested) || requested <= 0) return 600;
+  return Math.min(Math.max(requested, 24), 1200);
 }
 
 async function syscomFetch(pathname, token) {
@@ -238,6 +238,7 @@ async function getSyscomProducts(token, includePrices, maxProducts) {
   const seen = new Set();
   const products = [];
   const maxPerCategory = Math.max(12, Math.ceil(maxProducts / FEATURED_CATEGORIES.length));
+  const pagesPerSearch = maxProducts > 400 ? 3 : 2;
 
   for (const category of FEATURED_CATEGORIES) {
     let categoryCount = 0;
@@ -245,23 +246,28 @@ async function getSyscomProducts(token, includePrices, maxProducts) {
     for (const search of category.searches) {
       if (categoryCount >= maxPerCategory || products.length >= maxProducts) break;
 
-      const params = new URLSearchParams({
-        busqueda: search.replace(/\s+/g, "+"),
-        stock: "1",
-        orden: "topseller",
-        pagina: "1",
-      });
-      const payload = await syscomFetch(`/productos?${params.toString()}`, token);
-      const items = asArray(payload).slice(0, 8);
-
-      for (const item of items) {
-        const mapped = mapSyscomProduct(item, category, exchangeRate, includePrices);
-        const key = mapped.externalId || mapped.model;
-        if (seen.has(key)) continue;
-        seen.add(key);
-        products.push(mapped);
-        categoryCount += 1;
+      for (let page = 1; page <= pagesPerSearch; page += 1) {
         if (categoryCount >= maxPerCategory || products.length >= maxProducts) break;
+
+        const params = new URLSearchParams({
+          busqueda: search.replace(/\s+/g, "+"),
+          stock: "1",
+          orden: "topseller",
+          pagina: String(page),
+        });
+        const payload = await syscomFetch(`/productos?${params.toString()}`, token);
+        const items = asArray(payload).slice(0, 10);
+        if (!items.length) break;
+
+        for (const item of items) {
+          const mapped = mapSyscomProduct(item, category, exchangeRate, includePrices);
+          const key = mapped.externalId || mapped.model;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          products.push(mapped);
+          categoryCount += 1;
+          if (categoryCount >= maxPerCategory || products.length >= maxProducts) break;
+        }
       }
     }
   }

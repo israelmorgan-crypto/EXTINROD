@@ -189,6 +189,7 @@ const searchInput = document.querySelector("#searchInput");
 const categoryNav = document.querySelector("#categoryNav");
 const categoryVisuals = document.querySelector("#categoryVisuals");
 const footerProductNav = document.querySelector("#footerProductNav");
+const catalogCount = document.querySelector("#catalogCount");
 const cartCount = document.querySelector("#cartCount");
 const quoteDrawer = document.querySelector("#quoteDrawer");
 const cartItems = document.querySelector("#cartItems");
@@ -390,6 +391,10 @@ function renderProducts() {
   syncButtons();
   const items = filteredProducts();
 
+  if (catalogCount) {
+    catalogCount.textContent = `${items.length} de ${products.length} productos destacados`;
+  }
+
   if (!items.length) {
     grid.innerHTML = '<p class="empty-state">No encontramos productos con ese filtro.</p>';
     return;
@@ -564,7 +569,7 @@ async function loadProductsFromApi() {
     const headers = { Accept: "application/json" };
     if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-    const response = await fetch("/api/products", { headers });
+    const response = await fetch("/api/products?limit=600", { headers });
     if (!response.ok) return;
 
     const catalog = await response.json();
