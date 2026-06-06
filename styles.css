@@ -1009,6 +1009,96 @@ h3 {
   cursor: pointer;
 }
 
+.account-hero {
+  background:
+    linear-gradient(90deg, rgba(15, 38, 53, 0.92), rgba(15, 38, 53, 0.58)),
+    url("assets/crm-login-engineering.png") center / cover;
+  color: var(--white);
+}
+
+.account-hero h1,
+.account-hero p {
+  color: var(--white);
+}
+
+.account-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap: 18px;
+  padding: clamp(36px, 6vw, 80px) var(--page-x);
+  background: var(--soft);
+}
+
+.account-card,
+.account-status,
+.quote-form {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+}
+
+.account-card h2,
+.account-status h2,
+.quote-form h2 {
+  margin-bottom: 0;
+}
+
+.account-card label,
+.quote-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.account-status {
+  align-content: start;
+  background: linear-gradient(135deg, var(--navy), var(--blue));
+  color: var(--white);
+}
+
+.account-status h2,
+.account-status p {
+  color: var(--white);
+}
+
+.account-status .button {
+  justify-self: start;
+}
+
+.secondary {
+  color: var(--ink);
+  background: var(--white);
+  border-color: var(--line);
+}
+
+.quote-form {
+  margin-top: 16px;
+}
+
+.quote-form textarea {
+  min-height: 96px;
+}
+
+.form-status {
+  min-height: 22px;
+  margin: 0;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.form-status.ok {
+  color: var(--green);
+}
+
+.form-status.error {
+  color: var(--red);
+}
+
 .contact-panel {
   display: grid;
   gap: 12px;
@@ -1156,7 +1246,8 @@ h3 {
   .contact-layout,
   .service-detail,
   .catalog-shell,
-  .solutions-showcase {
+  .solutions-showcase,
+  .account-layout {
     grid-template-columns: 1fr;
   }
 

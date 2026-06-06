@@ -234,6 +234,44 @@ function renderAll() {
   updateKpis();
 }
 
+function mergeWebQuoteRequests(requests = []) {
+  requests.forEach((request) => {
+    const company = request.company_name || request.contact_name || request.email || "Prospecto web";
+    const service = (request.quote_request_items || []).length
+      ? request.quote_request_items.map((item) => `${item.qty} x ${item.sku}`).join(", ")
+      : request.message || "Solicitud web";
+
+    if (!customers.some((item) => item.cliente === company && item.contacto === request.email)) {
+      customers.unshift({
+        cliente: company,
+        contacto: request.email || request.contact_name || "Sin correo",
+        servicio: service,
+        estado: request.status === "nuevo" ? "Prospecto" : request.status,
+        responsable: "Sin asignar",
+      });
+    }
+
+    if (!quotes.some((item) => item.folio === `WEB-${String(request.id).slice(0, 8)}`)) {
+      quotes.unshift({
+        folio: `WEB-${String(request.id).slice(0, 8)}`,
+        cliente: company,
+        total: "Por cotizar",
+        estado: request.status || "nuevo",
+      });
+    }
+  });
+}
+
+async function loadWebProspects(employeeEmail) {
+  if (!employeeEmail) return;
+  const response = await fetch(`${apiBaseUrl}/api/crm-data?employee=${encodeURIComponent(employeeEmail)}`, {
+    headers: { Accept: "application/json" },
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || "No se pudieron cargar prospectos web.");
+  mergeWebQuoteRequests(body.quote_requests || []);
+}
+
 async function loadSupabaseConfig() {
   const response = await fetch(`${apiBaseUrl}/api/config`, { headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error("No se pudo leer la configuracion.");
@@ -301,6 +339,7 @@ async function initializeAuth() {
     if (savedEmployee?.email) {
       currentEmployee = savedEmployee;
       sessionLabel.textContent = `${savedEmployee.full_name} - ${savedEmployee.role}`;
+      await loadWebProspects(savedEmployee.email);
       renderAll();
       setLockedState(true);
       setAuthMessage("Acceso autorizado.", "ok");
@@ -345,6 +384,7 @@ loginForm.addEventListener("submit", async (event) => {
     currentEmployee = body.employee;
     sessionStorage.setItem("extinrod_crm_employee", JSON.stringify(body.employee));
     sessionLabel.textContent = `${body.employee.full_name} - ${body.employee.role}`;
+    await loadWebProspects(body.employee.email);
     renderAll();
     loginPassword.value = "";
     setAuthMessage("Acceso autorizado.", "ok");

@@ -192,8 +192,62 @@ const cartCount = document.querySelector("#cartCount");
 const quoteDrawer = document.querySelector("#quoteDrawer");
 const cartItems = document.querySelector("#cartItems");
 const quoteWhatsApp = document.querySelector("#quoteWhatsApp");
+const quoteRequestForm = document.querySelector("#quoteRequestForm");
+const quoteMessage = document.querySelector("#quoteMessage");
+const quoteStatus = document.querySelector("#quoteStatus");
 let activeCategory = location.hash ? location.hash.slice(1) : "all";
 let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
+
+const clientRegisterForm = document.querySelector("#clientRegisterForm");
+const clientLoginForm = document.querySelector("#clientLoginForm");
+const clientLogout = document.querySelector("#clientLogout");
+const clientAccountStatus = document.querySelector("#clientAccountStatus");
+
+function getClientSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem("extinrod_client_session") || "null");
+  } catch {
+    sessionStorage.removeItem("extinrod_client_session");
+    return null;
+  }
+}
+
+function setClientSession(session) {
+  sessionStorage.setItem("extinrod_client_session", JSON.stringify(session));
+}
+
+function clearClientSession() {
+  sessionStorage.removeItem("extinrod_client_session");
+}
+
+function setFormStatus(element, message, state = "info") {
+  if (!element) return;
+  element.textContent = message;
+  element.classList.toggle("ok", state === "ok");
+  element.classList.toggle("error", state === "error");
+}
+
+function renderClientStatus() {
+  if (!clientAccountStatus) return;
+  const session = getClientSession();
+
+  if (!session?.customer) {
+    clientAccountStatus.innerHTML = `
+      <p class="eyebrow">Estado</p>
+      <h2>Sin sesion activa</h2>
+      <p>Inicia sesion para enviar tu carrito de productos como solicitud de cotizacion.</p>
+      <a class="button primary" href="productos.html">Ver productos</a>
+    `;
+    return;
+  }
+
+  clientAccountStatus.innerHTML = `
+    <p class="eyebrow">Sesion activa</p>
+    <h2>${session.customer.company_name || session.customer.contact_name}</h2>
+    <p>${session.customer.contact_name || ""}<br />${session.customer.email}</p>
+    <a class="button primary" href="productos.html">Generar cotizacion</a>
+  `;
+}
 
 const slides = document.querySelectorAll(".hero-slide");
 const dotsHost = document.querySelector(".slider-dots");
@@ -405,10 +459,128 @@ if (grid && searchInput) {
     quoteDrawer?.setAttribute("aria-hidden", "true");
   });
 
+  quoteRequestForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const session = getClientSession();
+
+    if (!session?.access_token) {
+      setFormStatus(quoteStatus, "Inicia sesion o crea tu cuenta para generar la cotizacion.", "error");
+      window.setTimeout(() => {
+        window.location.href = "cuenta.html";
+      }, 900);
+      return;
+    }
+
+    if (!quoteCart.length && !quoteMessage?.value.trim()) {
+      setFormStatus(quoteStatus, "Agrega productos o describe que necesitas cotizar.", "error");
+      return;
+    }
+
+    const submitButton = quoteRequestForm.querySelector("button[type='submit']");
+    submitButton.disabled = true;
+    setFormStatus(quoteStatus, "Guardando solicitud en CRM...");
+
+    try {
+      const response = await fetch("/api/quote-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          items: quoteCart,
+          message: quoteMessage?.value.trim() || "",
+        }),
+      });
+      const body = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setFormStatus(quoteStatus, body.error || "No se pudo generar la cotizacion.", "error");
+        return;
+      }
+
+      quoteCart = [];
+      persistCart();
+      updateCart();
+      if (quoteMessage) quoteMessage.value = "";
+      setFormStatus(quoteStatus, "Solicitud enviada. Ya aparece en el CRM para seguimiento.", "ok");
+    } catch (error) {
+      setFormStatus(quoteStatus, error.message || "No se pudo enviar la solicitud.", "error");
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
   renderProducts();
   updateCart();
   loadProductsFromApi();
 }
+
+clientRegisterForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const submitButton = clientRegisterForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+
+  try {
+    const formData = new FormData(clientRegisterForm);
+    const payload = Object.fromEntries(formData.entries());
+    const response = await fetch("/api/client-register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      alert(body.error || "No se pudo crear la cuenta.");
+      return;
+    }
+
+    alert("Cuenta creada. Ahora inicia sesion para cotizar.");
+    clientLoginForm?.querySelector('[name="email"]')?.setAttribute("value", payload.email);
+    clientRegisterForm.reset();
+  } catch (error) {
+    alert(error.message || "No se pudo crear la cuenta.");
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+clientLoginForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const submitButton = clientLoginForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+
+  try {
+    const formData = new FormData(clientLoginForm);
+    const response = await fetch("/api/client-login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(formData.entries())),
+    });
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      alert(body.error || "No se pudo iniciar sesion.");
+      return;
+    }
+
+    setClientSession(body);
+    clientLoginForm.reset();
+    renderClientStatus();
+  } catch (error) {
+    alert(error.message || "No se pudo iniciar sesion.");
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
+clientLogout?.addEventListener("click", () => {
+  clearClientSession();
+  renderClientStatus();
+});
+
+renderClientStatus();
 
 function showSlide(index) {
   if (!slides.length) return;

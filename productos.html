@@ -14,6 +14,7 @@
         <a href="nosotros.html">Nosotros</a>
         <div class="nav-menu"><a href="servicios.html">Servicios</a><div class="submenu"><a href="servicios.html#ingenierias">Ingenierias</a><a href="servicios.html#tramites">Gestion de tramites</a><a href="servicios.html#mantenimientos">Mantenimientos</a><a href="servicios.html#construccion">Construccion y remodelacion</a></div></div>
         <div class="nav-menu"><a class="active" href="productos.html">Productos</a><div class="submenu"><a href="#incendios">Incendios</a><a href="#voceo">Voceo</a><a href="#data">Data</a><a href="#climas">Climas</a><a href="#videovigilancia">Video vigilancia</a><a href="#accesos">Control de accesos</a></div></div>
+        <a href="cuenta.html">Mi cuenta</a>
         <a href="contacto.html">Contacto</a>
       </nav>
     </header>
@@ -103,7 +104,14 @@
             <button class="icon-close" type="button" data-close-cart aria-label="Cerrar">×</button>
           </div>
           <div id="cartItems" class="cart-items"></div>
-          <a class="button primary" id="quoteWhatsApp" href="contacto.html">Solicitar cotizacion</a>
+          <form class="quote-form" id="quoteRequestForm">
+            <label>Comentarios para la cotizacion
+              <textarea id="quoteMessage" rows="4" placeholder="Proyecto, cantidades adicionales, planos, ubicacion o fecha objetivo"></textarea>
+            </label>
+            <p class="form-status" id="quoteStatus"></p>
+            <button class="button primary" type="submit">Generar cotizacion</button>
+            <a class="button secondary" id="quoteWhatsApp" href="contacto.html">Enviar por WhatsApp</a>
+          </form>
         </div>
       </aside>
     </main>
