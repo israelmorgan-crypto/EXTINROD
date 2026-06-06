@@ -294,37 +294,20 @@ async function initializeAuth() {
   setLockedState(false);
   clearDashboard();
   clearAuthError();
-  setAuthMessage("Conectando con Supabase...");
+  setAuthMessage("Listo. Ingresa tu correo y contrasena.");
 
   try {
-    const config = await withTimeout(loadSupabaseConfig(), 10000, "No se pudo conectar con la configuracion del CRM.");
-    if (!config.supabase?.configured) {
-      setAuthError("Falta configurar Supabase en Vercel.");
-      setAuthMessage("Configuracion incompleta.");
-      return;
-    }
-
-    await ensureSupabaseLibrary();
-
-    supabaseClient = window.supabase.createClient(config.supabase.url, config.supabase.anonKey);
-    const { data } = await withTimeout(
-      supabaseClient.auth.getSession(),
-      10000,
-      "No se pudo revisar la sesion actual."
-    );
-
-    if (data.session) {
-      await loadAuthorizedEmployee();
+    const savedEmployee = JSON.parse(sessionStorage.getItem("extinrod_crm_employee") || "null");
+    if (savedEmployee?.email) {
+      currentEmployee = savedEmployee;
+      sessionLabel.textContent = `${savedEmployee.full_name} - ${savedEmployee.role}`;
       renderAll();
       setLockedState(true);
       setAuthMessage("Acceso autorizado.", "ok");
       return;
     }
-
-    setAuthMessage("Listo. Ingresa tu correo y contrasena.");
   } catch (error) {
-    setAuthError(error.message || "No se pudo iniciar Supabase Auth.");
-    setAuthMessage("No se pudo preparar el acceso.");
+    sessionStorage.removeItem("extinrod_crm_employee");
   }
 }
 
@@ -333,40 +316,42 @@ loginForm.addEventListener("submit", async (event) => {
   clearAuthError();
   setAuthMessage("Validando acceso...");
 
-  if (!supabaseClient) {
-    setAuthError("Supabase aun no esta configurado.");
-    setAuthMessage("Acceso no disponible.");
-    return;
-  }
-
   const email = loginEmail.value.trim().toLowerCase();
   const password = loginPassword.value;
   const submitButton = loginForm.querySelector("button[type='submit']");
   submitButton.disabled = true;
 
   try {
-    const { error } = await withTimeout(
-      supabaseClient.auth.signInWithPassword({ email, password }),
+    const response = await withTimeout(
+      fetch(`${apiBaseUrl}/api/crm-login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      }),
       12000,
       "La validacion tardo demasiado. Revisa tu conexion e intenta otra vez."
     );
+    const body = await response.json().catch(() => ({}));
 
-    if (error) {
-      setAuthError(friendlyAuthError(error));
+    if (!response.ok) {
+      setAuthError(body.error || "Correo o contrasena incorrectos.");
       setAuthMessage("No se pudo iniciar sesion.");
       return;
     }
 
-    setAuthMessage("Vinculando perfil interno...");
-    await loadAuthorizedEmployee();
+    currentEmployee = body.employee;
+    sessionStorage.setItem("extinrod_crm_employee", JSON.stringify(body.employee));
+    sessionLabel.textContent = `${body.employee.full_name} - ${body.employee.role}`;
     renderAll();
     loginPassword.value = "";
     setAuthMessage("Acceso autorizado.", "ok");
     setLockedState(true);
-  } catch (profileError) {
-    await supabaseClient.auth.signOut();
-    setAuthError(profileError.message);
-    setAuthMessage("El usuario no tiene perfil autorizado.");
+  } catch (error) {
+    setAuthError(error.message || "No se pudo validar el acceso.");
+    setAuthMessage("Error de conexion.");
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = "Entrar al CRM";
@@ -374,7 +359,7 @@ loginForm.addEventListener("submit", async (event) => {
 });
 
 logoutButton.addEventListener("click", async () => {
-  if (supabaseClient) await supabaseClient.auth.signOut();
+  sessionStorage.removeItem("extinrod_crm_employee");
   currentEmployee = undefined;
   sessionLabel.textContent = "";
   clearDashboard();
