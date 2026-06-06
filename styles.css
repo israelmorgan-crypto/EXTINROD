@@ -797,6 +797,33 @@ h3 {
   max-width: 880px;
 }
 
+.about-manifesto {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: clamp(54px, 8vw, 110px) clamp(18px, 7vw, 110px);
+  background:
+    radial-gradient(circle at 50% 0%, rgba(181, 31, 43, 0.1), transparent 34%),
+    var(--white);
+  text-align: center;
+}
+
+.about-manifesto h2 {
+  max-width: 1060px;
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(2.05rem, 5vw, 5rem);
+  line-height: 1.06;
+}
+
+.about-manifesto p:not(.eyebrow) {
+  max-width: 820px;
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.22rem);
+  line-height: 1.65;
+}
+
 .about-intro,
 .about-commitment {
   display: grid;
@@ -841,6 +868,50 @@ h3 {
 .about-metrics span {
   color: var(--steel);
   font-weight: 900;
+}
+
+.about-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  padding-top: 0;
+  padding-bottom: 0;
+  background: var(--line);
+}
+
+.about-flow article {
+  min-height: 280px;
+  display: grid;
+  align-content: end;
+  gap: 12px;
+  padding: clamp(24px, 4vw, 42px);
+  background: var(--white);
+}
+
+.about-flow article:nth-child(2) {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 246, 242, 0.98)),
+    var(--paper);
+}
+
+.about-flow span {
+  color: var(--red);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.about-flow h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.35rem, 2.5vw, 2.25rem);
+  line-height: 1.05;
+}
+
+.about-flow p {
+  max-width: 420px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
 }
 
 .section-heading {
@@ -2353,6 +2424,7 @@ h3 {
   }
 
   .about-metrics,
+  .about-flow,
   .division-grid,
   .commitment-grid {
     grid-template-columns: 1fr;
