@@ -328,7 +328,7 @@ async function getSyscomBrandLogos(token, products) {
       const detail = await syscomFetch(`/marcas/${encodeURIComponent(brand.id)}`, token);
       return {
         id: String(brand.id),
-        name: detail.titulo || detail.nombre || brand.name,
+        name: detail.nombre || brand.name || brand.requestedName,
         requestedName: brand.requestedName,
         logo: detail.logo || detail.marca_logo || "",
         description: detail.descripcion || "",
