@@ -221,7 +221,7 @@ function publicCategoryImage(products, category) {
 
 function getRequestedLimit(request) {
   const requested = Number(request.query?.limit || request.query?.max || 0);
-  if (!Number.isFinite(requested) || requested <= 0) return 600;
+  if (!Number.isFinite(requested) || requested <= 0) return 120;
   return Math.min(Math.max(requested, 24), 1200);
 }
 

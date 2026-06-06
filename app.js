@@ -569,7 +569,7 @@ async function loadProductsFromApi() {
     const headers = { Accept: "application/json" };
     if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-    const response = await fetch("/api/products?limit=600", { headers });
+    const response = await fetch("/api/products?limit=120", { headers });
     if (!response.ok) return;
 
     const catalog = await response.json();
