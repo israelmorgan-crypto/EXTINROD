@@ -1175,6 +1175,14 @@ h3 {
   background: var(--white);
   color: var(--steel);
   font-weight: 900;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.social-access button:not(:disabled):hover {
+  border-color: #93a3bb;
+  box-shadow: 0 10px 24px rgba(24, 39, 58, 0.09);
+  transform: translateY(-1px);
 }
 
 .social-access button:disabled {

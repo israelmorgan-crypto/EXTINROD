@@ -200,8 +200,10 @@ let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
 
 const clientRegisterForm = document.querySelector("#clientRegisterForm");
 const clientLoginForm = document.querySelector("#clientLoginForm");
-const clientLogout = document.querySelector("#clientLogout");
+const clientShowRegister = document.querySelector("#clientShowRegister");
+const clientRegisterPanel = document.querySelector("#clientRegisterPanel");
 const clientAccountStatus = document.querySelector("#clientAccountStatus");
+const oauthButtons = document.querySelectorAll("[data-oauth-provider]");
 
 function getClientSession() {
   try {
@@ -227,6 +229,68 @@ function setFormStatus(element, message, state = "info") {
   element.classList.toggle("error", state === "error");
 }
 
+function getHashParams() {
+  const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
+  return new URLSearchParams(hash);
+}
+
+async function linkClientSession(accessToken) {
+  const response = await fetch("/api/client-session", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const body = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(body.error || "No se pudo validar la sesion.");
+  }
+
+  setClientSession(body);
+  renderClientStatus();
+  return body;
+}
+
+async function startClientOAuth(provider) {
+  const configResponse = await fetch("/api/config", { cache: "no-store" });
+  const config = await configResponse.json().catch(() => ({}));
+  const supabase = config?.supabase || {};
+
+  if (!supabase.configured || !supabase.url || !supabase.anonKey) {
+    alert("Falta configuracion publica de Supabase para iniciar sesion con este proveedor.");
+    return;
+  }
+
+  const redirectTo = "https://extinrod.com/cuenta";
+  const authUrl = new URL(`${supabase.url}/auth/v1/authorize`);
+  authUrl.searchParams.set("provider", provider);
+  authUrl.searchParams.set("redirect_to", redirectTo);
+  authUrl.searchParams.set("response_type", "token");
+  window.location.href = authUrl.toString();
+}
+
+async function handleClientOAuthReturn() {
+  if (!clientLoginForm || !window.location.hash) return;
+
+  const params = getHashParams();
+  const error = params.get("error_description") || params.get("error");
+  const accessToken = params.get("access_token");
+
+  if (error) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    alert(decodeURIComponent(error));
+    return;
+  }
+
+  if (!accessToken) return;
+
+  try {
+    await linkClientSession(accessToken);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } catch (error) {
+    alert(error.message || "No se pudo completar el inicio de sesion.");
+  }
+}
+
 function renderClientStatus() {
   if (!clientAccountStatus) return;
   const session = getClientSession();
@@ -246,6 +310,7 @@ function renderClientStatus() {
     <h2>${session.customer.company_name || session.customer.contact_name}</h2>
     <p>${session.customer.contact_name || ""}<br />${session.customer.email}</p>
     <a class="button primary" href="productos.html">Generar cotización</a>
+    <button class="button secondary" type="button" data-client-logout>Cerrar sesión</button>
   `;
 }
 
@@ -575,11 +640,27 @@ clientLoginForm?.addEventListener("submit", async (event) => {
   }
 });
 
-clientLogout?.addEventListener("click", () => {
+clientShowRegister?.addEventListener("click", () => {
+  if (!clientRegisterPanel) return;
+  clientRegisterPanel.open = true;
+  clientRegisterPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+oauthButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const provider = button.dataset.oauthProvider;
+    if (provider) startClientOAuth(provider);
+  });
+});
+
+document.addEventListener("click", (event) => {
+  const logoutButton = event.target.closest("[data-client-logout]");
+  if (!logoutButton) return;
   clearClientSession();
   renderClientStatus();
 });
 
+handleClientOAuthReturn();
 renderClientStatus();
 
 function showSlide(index) {

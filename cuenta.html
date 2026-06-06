@@ -35,17 +35,17 @@
               <span class="input-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><input name="password" type="password" placeholder="Contraseña" autocomplete="current-password" required /></span>
             </label>
             <button class="button primary access-submit" type="submit">Acceder</button>
-            <button class="button secondary" id="clientLogout" type="button">Cerrar sesion</button>
+            <button class="button secondary" id="clientShowRegister" type="button">Crear cuenta nueva</button>
           </form>
 
           <div class="access-divider"><span>O CONTINUAR CON</span></div>
           <div class="social-access" aria-label="Accesos externos">
-            <button type="button" disabled><span class="google-mark">G</span> Google</button>
-            <button type="button" disabled><span class="facebook-mark">f</span> Facebook</button>
-            <button type="button" disabled><span class="microsoft-mark"></span> Microsoft</button>
+            <button type="button" data-oauth-provider="google"><span class="google-mark">G</span> Google</button>
+            <button type="button" data-oauth-provider="facebook"><span class="facebook-mark">f</span> Facebook</button>
+            <button type="button" data-oauth-provider="azure"><span class="microsoft-mark"></span> Microsoft</button>
             <button type="button" disabled><span class="apple-mark">A</span> Apple</button>
           </div>
-          <p class="access-note">Los accesos externos se activarán cuando terminemos la configuración OAuth.</p>
+          <p class="access-note">También puedes entrar con tu cuenta empresarial o personal si el proveedor está activo.</p>
 
           <aside class="account-status" id="clientAccountStatus">
             <p class="eyebrow">Estado</p>
@@ -54,7 +54,7 @@
             <a class="button primary" href="productos.html">Ver productos</a>
           </aside>
 
-          <details class="register-panel">
+          <details class="register-panel" id="clientRegisterPanel">
             <summary>Crear cuenta nueva</summary>
             <form class="register-form" id="clientRegisterForm">
               <label>Nombre de contacto<input name="contact_name" required /></label>
