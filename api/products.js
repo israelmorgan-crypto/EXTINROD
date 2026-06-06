@@ -251,14 +251,14 @@ async function getSyscomAccessToken() {
   const response = await fetch(SYSCOM_TOKEN_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/x-www-form-urlencoded",
       Accept: "application/json",
     },
-    body: JSON.stringify({
+    body: new URLSearchParams({
       client_id: clientId,
       client_secret: clientSecret,
       grant_type: "client_credentials",
-    }),
+    }).toString(),
   });
   const body = await readJson(response);
 
