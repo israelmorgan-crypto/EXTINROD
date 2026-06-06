@@ -171,12 +171,12 @@
         window.setTimeout(function () {
           if (!window.extinrodCrmReady) {
             if (status) status.textContent = "El formulario respondio, pero no cargo el motor del CRM.";
-            if (error) error.textContent = "Abre https://extinrod.mx/crm en Chrome o recarga con Ctrl + F5. No uses la ruta file:/// local.";
+            if (error) error.textContent = "No se cargo engine.js. Abre https://extinrod.mx/crm en Chrome o recarga con Ctrl + F5.";
             if (button) button.textContent = "Entrar al CRM";
           }
         }, 2500);
       }, { capture: true });
     </script>
-    <script src="app.js?v=20260606-supabase-loader"></script>
+    <script src="engine.js?v=20260606-engine"></script>
   </body>
 </html>
