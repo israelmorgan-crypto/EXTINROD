@@ -204,6 +204,7 @@ const clientShowRegister = document.querySelector("#clientShowRegister");
 const clientRegisterPanel = document.querySelector("#clientRegisterPanel");
 const clientAccountStatus = document.querySelector("#clientAccountStatus");
 const oauthButtons = document.querySelectorAll("[data-oauth-provider]");
+let browserSupabaseClient;
 
 function getClientSession() {
   try {
@@ -229,11 +230,6 @@ function setFormStatus(element, message, state = "info") {
   element.classList.toggle("error", state === "error");
 }
 
-function getHashParams() {
-  const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : window.location.hash;
-  return new URLSearchParams(hash);
-}
-
 async function linkClientSession(accessToken) {
   const response = await fetch("/api/client-session", {
     method: "POST",
@@ -250,30 +246,48 @@ async function linkClientSession(accessToken) {
   return body;
 }
 
-async function startClientOAuth(provider) {
+async function getBrowserSupabaseClient() {
+  if (browserSupabaseClient) return browserSupabaseClient;
+
   const configResponse = await fetch("/api/config", { cache: "no-store" });
   const config = await configResponse.json().catch(() => ({}));
-  const supabase = config?.supabase || {};
+  const supabaseConfig = config?.supabase || {};
 
-  if (!supabase.configured || !supabase.url || !supabase.anonKey) {
-    alert("Falta configuracion publica de Supabase para iniciar sesion con este proveedor.");
-    return;
+  if (!supabaseConfig.configured || !supabaseConfig.url || !supabaseConfig.anonKey) {
+    throw new Error("Falta configuracion publica de Supabase para iniciar sesion con este proveedor.");
   }
 
-  const redirectTo = "https://extinrod.com/cuenta";
-  const authUrl = new URL(`${supabase.url}/auth/v1/authorize`);
-  authUrl.searchParams.set("provider", provider);
-  authUrl.searchParams.set("redirect_to", redirectTo);
-  authUrl.searchParams.set("response_type", "token");
-  window.location.href = authUrl.toString();
+  if (!window.supabase?.createClient) {
+    throw new Error("No se cargo el cliente de Supabase. Recarga la pagina e intenta de nuevo.");
+  }
+
+  browserSupabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+  return browserSupabaseClient;
+}
+
+async function startClientOAuth(provider) {
+  try {
+    const client = await getBrowserSupabaseClient();
+    const { error } = await client.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: "https://extinrod.com/cuenta",
+        skipBrowserRedirect: false,
+      },
+    });
+
+    if (error) throw error;
+  } catch (error) {
+    alert(error.message || "No se pudo iniciar sesion con este proveedor.");
+  }
 }
 
 async function handleClientOAuthReturn() {
-  if (!clientLoginForm || !window.location.hash) return;
+  if (!clientLoginForm) return;
 
-  const params = getHashParams();
-  const error = params.get("error_description") || params.get("error");
-  const accessToken = params.get("access_token");
+  const urlParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "");
+  const error = urlParams.get("error_description") || urlParams.get("error") || hashParams.get("error_description") || hashParams.get("error");
 
   if (error) {
     window.history.replaceState({}, document.title, window.location.pathname);
@@ -281,6 +295,19 @@ async function handleClientOAuthReturn() {
     return;
   }
 
+  let session;
+  try {
+    const client = await getBrowserSupabaseClient();
+    const result = await client.auth.getSession();
+    session = result?.data?.session;
+  } catch (error) {
+    if (window.location.hash || window.location.search) {
+      alert(error.message || "No se pudo completar el inicio de sesion.");
+    }
+    return;
+  }
+
+  const accessToken = session?.access_token || hashParams.get("access_token");
   if (!accessToken) return;
 
   try {
