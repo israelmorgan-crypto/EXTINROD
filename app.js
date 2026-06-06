@@ -189,6 +189,7 @@ const searchInput = document.querySelector("#searchInput");
 const brandFilter = document.querySelector("#brandFilter");
 const categoryNav = document.querySelector("#categoryNav");
 const categoryVisuals = document.querySelector("#categoryVisuals");
+const subcategoryNav = document.querySelector("#subcategoryNav");
 const footerProductNav = document.querySelector("#footerProductNav");
 const catalogCount = document.querySelector("#catalogCount");
 const cartCount = document.querySelector("#cartCount");
@@ -204,9 +205,45 @@ const quoteMessage = document.querySelector("#quoteMessage");
 const quoteStatus = document.querySelector("#quoteStatus");
 let activeCategory = location.hash ? location.hash.slice(1) : "all";
 let activeBrand = "all";
+let activeSubcategory = "all";
+let visibleProductLimit = 12;
 let quoteCart = JSON.parse(localStorage.getItem("extinrod_quote_cart") || "[]");
 let wishlist = JSON.parse(localStorage.getItem("extinrod_wishlist") || "[]");
 let catalogPricesVisible = false;
+
+const SUBCATEGORY_RULES = {
+  incendios: [
+    { id: "deteccion", name: "Deteccion", terms: ["detector", "humo", "smoke", "temperatura", "sensor"] },
+    { id: "paneles", name: "Paneles y modulos", terms: ["panel", "modulo", "fire-lite", "notifier", "vista"] },
+    { id: "notificacion", name: "Notificacion", terms: ["sirena", "estrobo", "strobe", "nac", "evacuacion"] },
+    { id: "portatiles", name: "Portatiles y supresion", terms: ["extintor", "supresion", "fm-200", "co2", "valvula"] },
+  ],
+  voceo: [
+    { id: "amplificacion", name: "Amplificadores", terms: ["amplificador", "amplifier", "70v"] },
+    { id: "bocinas", name: "Bocinas y altavoces", terms: ["bocina", "altavoz", "speaker", "plafon"] },
+    { id: "microfonos", name: "Microfonos y control", terms: ["microfono", "microphone", "control", "mezclador"] },
+  ],
+  data: [
+    { id: "cableado", name: "Cableado", terms: ["cable", "cat6", "cat 6", "cat5", "fibra"] },
+    { id: "racks", name: "Racks y gabinetes", terms: ["rack", "gabinete", "charola", "organizador"] },
+    { id: "conectividad", name: "Conectividad", terms: ["patch", "jack", "keystone", "conector"] },
+  ],
+  climas: [
+    { id: "minisplits", name: "Minisplits", terms: ["minisplit", "aire acondicionado"] },
+    { id: "gabinetes", name: "Gabinetes climaticos", terms: ["hoffman", "gabinete", "ventilador", "termostato"] },
+    { id: "instalacion", name: "Accesorios de instalacion", terms: ["kit", "canaleta", "tuberia", "terminal"] },
+  ],
+  videovigilancia: [
+    { id: "camaras", name: "Camaras", terms: ["camara", "camera", "domo", "bullet", "ptz"] },
+    { id: "grabacion", name: "Grabacion", terms: ["nvr", "dvr", "grabador", "disco duro"] },
+    { id: "energia-red", name: "PoE y accesorios", terms: ["poe", "switch", "fuente", "montaje"] },
+  ],
+  accesos: [
+    { id: "biometria", name: "Biometria", terms: ["biometrico", "huella", "facial", "zkteco"] },
+    { id: "cerraduras", name: "Cerraduras", terms: ["cerradura", "magnetica", "chapa", "yale"] },
+    { id: "lectoras", name: "Lectoras y credenciales", terms: ["lector", "tarjeta", "proximidad", "control acceso"] },
+  ],
+};
 
 const clientRegisterForm = document.querySelector("#clientRegisterForm");
 const clientLoginForm = document.querySelector("#clientLoginForm");
@@ -418,13 +455,44 @@ function productMatches(product, query) {
   return text.includes(normalize(query));
 }
 
+function productText(product) {
+  return normalize(`${product.name} ${product.model} ${product.brand} ${product.description || ""} ${product.categoryName}`);
+}
+
+function subcategoryForProduct(product) {
+  const rules = SUBCATEGORY_RULES[product.category] || [];
+  const text = productText(product);
+  const match = rules.find((rule) => rule.terms.some((term) => text.includes(normalize(term))));
+  return match?.id || "otros";
+}
+
+function subcategoryOptions() {
+  if (activeCategory === "all") return [];
+  const rules = SUBCATEGORY_RULES[activeCategory] || [];
+  const categoryProducts = products.filter((product) => product.category === activeCategory);
+  const options = rules
+    .map((rule) => ({
+      ...rule,
+      count: categoryProducts.filter((product) => subcategoryForProduct(product) === rule.id).length,
+    }))
+    .filter((rule) => rule.count > 0);
+  const otherCount = categoryProducts.filter((product) => subcategoryForProduct(product) === "otros").length;
+  if (otherCount > 0) options.push({ id: "otros", name: "Complementarios", count: otherCount });
+  return options;
+}
+
+function shouldShowProducts() {
+  return activeCategory !== "all" || activeBrand !== "all" || searchInput.value.trim() !== "";
+}
+
 function filteredProducts() {
   const query = searchInput.value.trim();
   return products.filter((product) => {
     const matchesCategory = activeCategory === "all" || product.category === activeCategory;
     const matchesBrand = activeBrand === "all" || product.brand === activeBrand;
+    const matchesSubcategory = activeSubcategory === "all" || subcategoryForProduct(product) === activeSubcategory;
     const matchesQuery = query === "" || productMatches(product, query);
-    return matchesCategory && matchesBrand && matchesQuery;
+    return matchesCategory && matchesBrand && matchesSubcategory && matchesQuery;
   });
 }
 
@@ -446,12 +514,88 @@ function renderBrandFilter() {
   brandFilter.value = activeBrand;
 }
 
+function renderSubcategoryNav() {
+  if (!subcategoryNav) return;
+  const options = subcategoryOptions();
+
+  if (activeCategory === "all" || !options.length) {
+    subcategoryNav.innerHTML = "";
+    return;
+  }
+
+  const total = products.filter((product) => product.category === activeCategory).length;
+  subcategoryNav.innerHTML = [
+    `<button class="subcategory-button ${activeSubcategory === "all" ? "active" : ""}" data-subcategory="all" type="button">Todo <span>${total}</span></button>`,
+    ...options.map(
+      (option) =>
+        `<button class="subcategory-button ${activeSubcategory === option.id ? "active" : ""}" data-subcategory="${option.id}" type="button">${option.name} <span>${option.count}</span></button>`
+    ),
+  ].join("");
+
+  subcategoryNav.querySelectorAll(".subcategory-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      activeSubcategory = button.dataset.subcategory;
+      visibleProductLimit = 12;
+      renderProducts();
+    });
+  });
+}
+
+function renderCatalogLanding() {
+  const total = products.length;
+  const categoryCards = categories
+    .map((category) => {
+      const count = products.filter((product) => product.category === category.id).length;
+      return `
+        <button class="catalog-family-card" data-category="${category.id}" type="button">
+          <img src="${category.image || "assets/logo-extinrod.png"}" alt="${category.name}" loading="lazy" />
+          <span>${category.name}</span>
+          <small>${category.summary}</small>
+          <strong>${count} destacados</strong>
+        </button>
+      `;
+    })
+    .join("");
+
+  grid.innerHTML = `
+    <section class="catalog-landing">
+      <div class="catalog-landing-copy">
+        <p class="eyebrow">Catalogo por familias</p>
+        <h3>Elige una division para ver productos destacados.</h3>
+        <p>Organizamos el catalogo por soluciones para que la pagina cargue mas ligero y el cliente llegue rapido a lo que necesita cotizar.</p>
+        <div class="catalog-summary">
+          <span>${categories.length} familias</span>
+          <span>${total} productos indexados</span>
+          <span>Precio visible al cotizar</span>
+        </div>
+      </div>
+      <div class="catalog-family-grid">${categoryCards}</div>
+    </section>
+  `;
+
+  grid.querySelectorAll(".catalog-family-card").forEach((button) => {
+    button.addEventListener("click", () => selectCategory(button.dataset.category));
+  });
+}
+
 function renderProducts() {
   syncButtons();
+  renderSubcategoryNav();
+
+  if (!shouldShowProducts()) {
+    if (catalogCount) {
+      catalogCount.textContent = `${products.length} productos organizados por familias`;
+    }
+    renderCatalogLanding();
+    return;
+  }
+
   const items = filteredProducts();
+  const visibleItems = items.slice(0, visibleProductLimit);
 
   if (catalogCount) {
-    catalogCount.textContent = `${items.length} de ${products.length} productos destacados`;
+    const currentCategory = categories.find((category) => category.id === activeCategory)?.name || "catalogo";
+    catalogCount.textContent = `${visibleItems.length} de ${items.length} productos en ${currentCategory}`;
   }
 
   if (!items.length) {
@@ -459,7 +603,8 @@ function renderProducts() {
     return;
   }
 
-  grid.innerHTML = items
+  grid.innerHTML = [
+    ...visibleItems
     .map(
       (product) => {
         const code = productCode(product);
@@ -492,8 +637,16 @@ function renderProducts() {
         </article>
       `;
       }
-    )
-    .join("");
+    ),
+    items.length > visibleProductLimit
+      ? `<button class="load-more-products" type="button" data-load-more-products>Ver mas productos <span>${items.length - visibleProductLimit}</span></button>`
+      : "",
+  ].join("");
+
+  grid.querySelector("[data-load-more-products]")?.addEventListener("click", () => {
+    visibleProductLimit += 12;
+    renderProducts();
+  });
 }
 
 function persistCart() {
@@ -584,15 +737,15 @@ function renderCategoryVisuals() {
 
   categoryVisuals.querySelectorAll(".visual-category").forEach((button) => {
     button.addEventListener("click", () => {
-      activeCategory = button.dataset.category;
-      history.replaceState(null, "", `#${activeCategory}`);
-      renderProducts();
+      selectCategory(button.dataset.category);
     });
   });
 }
 
 function selectCategory(categoryId) {
   activeCategory = categoryId;
+  activeSubcategory = "all";
+  visibleProductLimit = 12;
   history.replaceState(null, "", activeCategory === "all" ? "productos.html" : `#${activeCategory}`);
   renderProducts();
 }
@@ -818,9 +971,13 @@ async function loadProductsFromApi() {
 if (grid && searchInput) {
   renderCategorySurfaces();
 
-  searchInput.addEventListener("input", renderProducts);
+  searchInput.addEventListener("input", () => {
+    visibleProductLimit = 12;
+    renderProducts();
+  });
   brandFilter?.addEventListener("change", () => {
     activeBrand = brandFilter.value;
+    visibleProductLimit = 12;
     renderProducts();
   });
   grid.addEventListener("click", (event) => {
