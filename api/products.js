@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const SYSCOM_BASE_URL = "https://developers.syscom.mx/api/v1";
+const SYSCOM_TOKEN_URL = "https://developers.syscom.mx/oauth/token";
 
 const FEATURED_CATEGORIES = [
   {
@@ -194,6 +195,35 @@ async function syscomFetch(pathname, token) {
   return body;
 }
 
+async function getSyscomAccessToken() {
+  const manualToken = process.env.SYSCOM_API_TOKEN || process.env.SYSCOM_TOKEN || "";
+  const clientId = process.env.SYSCOM_CLIENT_ID || "";
+  const clientSecret = process.env.SYSCOM_CLIENT_SECRET || "";
+
+  if (!clientId || !clientSecret) return manualToken;
+
+  const response = await fetch(SYSCOM_TOKEN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      client_id: clientId,
+      client_secret: clientSecret,
+      grant_type: "client_credentials",
+    }),
+  });
+  const body = await readJson(response);
+
+  if (!response.ok || !body.access_token) {
+    if (manualToken) return manualToken;
+    throw new Error(body?.message || body?.error || "No se pudo generar token Syscom");
+  }
+
+  return body.access_token;
+}
+
 async function getExchangeRate(token) {
   try {
     const body = await syscomFetch("/tipocambio", token);
@@ -250,7 +280,11 @@ module.exports = async function handler(request, response) {
   const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
   const anonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  const syscomToken = process.env.SYSCOM_API_TOKEN || process.env.SYSCOM_TOKEN || "";
+  const hasSyscomCredentials = Boolean(
+    process.env.SYSCOM_API_TOKEN ||
+      process.env.SYSCOM_TOKEN ||
+      (process.env.SYSCOM_CLIENT_ID && process.env.SYSCOM_CLIENT_SECRET)
+  );
   const maxProducts = getRequestedLimit(request);
 
   try {
@@ -259,8 +293,9 @@ module.exports = async function handler(request, response) {
     let source = "local-seed";
     let products;
 
-    if (syscomToken) {
+    if (hasSyscomCredentials) {
       try {
+        const syscomToken = await getSyscomAccessToken();
         products = await getSyscomProducts(syscomToken, includePrices, maxProducts);
         source = "syscom";
       } catch (error) {

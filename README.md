@@ -22,7 +22,14 @@ Conectar el CRM a Supabase Auth y PostgreSQL para usuarios, clientes, seguimient
 
 ## Catalogo Syscom
 
-El endpoint `api/products` usa `SYSCOM_API_TOKEN` en Vercel para consultar productos destacados por familia:
+El endpoint `api/products` usa credenciales Syscom en Vercel para consultar productos destacados por familia.
+
+Variables recomendadas:
+
+- `SYSCOM_CLIENT_ID`
+- `SYSCOM_CLIENT_SECRET`
+
+Tambien acepta `SYSCOM_API_TOKEN`, pero ese token puede expirar. Con `SYSCOM_CLIENT_ID` y `SYSCOM_CLIENT_SECRET`, el backend genera el token automaticamente.
 
 - Incendios
 - Voceo
