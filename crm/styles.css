@@ -16,6 +16,10 @@
   box-sizing: border-box;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
@@ -39,17 +43,13 @@ body.locked [data-private] {
 
 .login-screen {
   min-height: 100vh;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   padding: 28px;
   background:
     linear-gradient(90deg, rgba(15, 38, 53, 0.92), rgba(15, 38, 53, 0.62)),
     url("../assets/bg-extinrod-operacion.jpg") center / cover;
-}
-
-body.locked .login-screen {
-  display: flex;
 }
 
 .login-card {

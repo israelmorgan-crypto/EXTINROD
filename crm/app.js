@@ -51,8 +51,10 @@ const loginForm = document.querySelector("#loginForm");
 const loginEmail = document.querySelector("#loginEmail");
 const loginPassword = document.querySelector("#loginPassword");
 const loginError = document.querySelector("#loginError");
+const loginScreen = document.querySelector("#loginScreen");
 const logoutButton = document.querySelector("#logoutButton");
 const sessionLabel = document.querySelector("#sessionLabel");
+const privateSections = document.querySelectorAll("[data-private]");
 const customerRows = document.querySelector("#customerRows");
 const followUpList = document.querySelector("#followUpList");
 const quoteList = document.querySelector("#quoteList");
@@ -62,6 +64,21 @@ const dialog = document.querySelector("#followDialog");
 
 function setLockedState(isActive) {
   document.body.classList.toggle("locked", !isActive);
+  loginScreen.hidden = isActive;
+  privateSections.forEach((section) => {
+    section.hidden = !isActive;
+  });
+}
+
+function clearDashboard() {
+  customerRows.innerHTML = "";
+  followUpList.innerHTML = "";
+  quoteList.innerHTML = "";
+  taskList.innerHTML = "";
+  document.querySelector("#kpiClientes").textContent = "0";
+  document.querySelector("#kpiSeguimientos").textContent = "0";
+  document.querySelector("#kpiCotizaciones").textContent = "0";
+  document.querySelector("#kpiVencidas").textContent = "0";
 }
 
 function renderCustomers(items = customers) {
@@ -145,7 +162,7 @@ async function loadEmployeeProfile() {
 
 async function initializeAuth() {
   setLockedState(false);
-  document.body.classList.add("locked");
+  clearDashboard();
 
   try {
     const config = await loadSupabaseConfig();
@@ -164,6 +181,7 @@ async function initializeAuth() {
 
     if (data.session) {
       await loadEmployeeProfile();
+      renderAll();
       setLockedState(true);
     }
   } catch (error) {
@@ -191,6 +209,7 @@ loginForm.addEventListener("submit", async (event) => {
 
   try {
     await loadEmployeeProfile();
+    renderAll();
     loginPassword.value = "";
     setLockedState(true);
   } catch (profileError) {
@@ -203,8 +222,8 @@ logoutButton.addEventListener("click", async () => {
   if (supabaseClient) await supabaseClient.auth.signOut();
   currentEmployee = undefined;
   sessionLabel.textContent = "";
+  clearDashboard();
   setLockedState(false);
 });
 
-renderAll();
 initializeAuth();
