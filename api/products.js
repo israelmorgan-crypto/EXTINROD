@@ -544,7 +544,12 @@ module.exports = async function handler(request, response) {
       try {
         const syscomToken = await getSyscomAccessToken();
         const products = await getSyscomProducts(syscomToken, includePrices, maxProducts);
-        const brands = await getSyscomBrandLogos(syscomToken, products);
+        let brands = [];
+        try {
+          brands = await getSyscomBrandLogos(syscomToken, products);
+        } catch {
+          brands = [];
+        }
         payload = buildCatalogPayload({
           source: "syscom",
           includePrices,
@@ -569,10 +574,14 @@ module.exports = async function handler(request, response) {
       payload = getLocalCatalogPayload(includePrices);
     }
 
-    setCachedCatalog(key, payload);
+    const isLocalFallback = String(payload.source).startsWith("local-seed:");
+    if (!isLocalFallback) setCachedCatalog(key, payload);
 
     response.setHeader("X-EXTINROD-Catalog-Cache", payload.cache);
-    response.setHeader("Cache-Control", includePrices ? "private, max-age=60" : "s-maxage=1800, stale-while-revalidate=86400");
+    response.setHeader(
+      "Cache-Control",
+      includePrices ? "private, max-age=60" : isLocalFallback ? "s-maxage=60, stale-while-revalidate=300" : "s-maxage=1800, stale-while-revalidate=86400"
+    );
     response.status(200).json(payload);
   } catch (error) {
     response.status(500).json({
