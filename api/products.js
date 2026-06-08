@@ -3,6 +3,10 @@ const path = require("path");
 
 const SYSCOM_BASE_URL = "https://developers.syscom.mx/api/v1";
 const SYSCOM_TOKEN_URL = "https://developers.syscom.mx/oauth/token";
+const SYSCOM_FETCH_TIMEOUT_MS = 6500;
+const PUBLIC_CATALOG_TTL_MS = 45 * 60 * 1000;
+const AUTHENTICATED_CATALOG_TTL_MS = 5 * 60 * 1000;
+const catalogCache = new Map();
 
 const FEATURED_CATEGORIES = [
   {
@@ -117,15 +121,56 @@ async function readJson(response) {
   }
 }
 
+function cacheKey(includePrices, maxProducts) {
+  return `${includePrices ? "auth" : "public"}:${maxProducts}`;
+}
+
+function getCachedCatalog(key, ttlMs, allowStale = false) {
+  const cached = catalogCache.get(key);
+  if (!cached) return null;
+
+  const age = Date.now() - cached.storedAt;
+  if (allowStale || age < ttlMs) {
+    return {
+      ...cached.payload,
+      cache: allowStale && age >= ttlMs ? "stale" : "hit",
+      stale: allowStale && age >= ttlMs,
+    };
+  }
+
+  return null;
+}
+
+function setCachedCatalog(key, payload) {
+  catalogCache.set(key, {
+    storedAt: Date.now(),
+    payload,
+  });
+}
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = SYSCOM_FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getUserFromToken(supabaseUrl, anonKey, token) {
   if (!supabaseUrl || !anonKey || !token) return null;
 
-  const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+  const userResponse = await fetchWithTimeout(`${supabaseUrl}/auth/v1/user`, {
     headers: {
       apikey: anonKey,
       Authorization: `Bearer ${token}`,
     },
-  });
+  }, 4500);
   const user = await readJson(userResponse);
   return userResponse.ok && user?.email ? user : null;
 }
@@ -234,7 +279,7 @@ function getRequestedLimit(request) {
 }
 
 async function syscomFetch(pathname, token) {
-  const response = await fetch(`${SYSCOM_BASE_URL}${pathname}`, {
+  const response = await fetchWithTimeout(`${SYSCOM_BASE_URL}${pathname}`, {
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
@@ -256,7 +301,7 @@ async function getSyscomAccessToken() {
 
   if (!clientId || !clientSecret) return manualToken;
 
-  const response = await fetch(SYSCOM_TOKEN_URL, {
+  const response = await fetchWithTimeout(SYSCOM_TOKEN_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -430,6 +475,37 @@ async function getSyscomProducts(token, includePrices, maxProducts) {
   return products;
 }
 
+function buildCatalogPayload({ source, includePrices, products, brands, cache = "miss", stale = false }) {
+  const categories = FEATURED_CATEGORIES.map((category) => ({
+    id: category.id,
+    name: category.name,
+    summary: category.summary,
+    image: publicCategoryImage(products, category),
+  }));
+
+  return {
+    source,
+    cache,
+    stale,
+    authenticated: includePrices,
+    pricesVisible: includePrices,
+    updatedAt: new Date().toISOString(),
+    categories,
+    brands,
+    products,
+  };
+}
+
+function getLocalCatalogPayload(includePrices, source = "local-seed") {
+  const catalog = readLocalCatalog();
+  return buildCatalogPayload({
+    source,
+    includePrices,
+    products: catalog.products.map((product) => mapLocalProduct(product, includePrices)),
+    brands: [],
+  });
+}
+
 module.exports = async function handler(request, response) {
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
@@ -451,43 +527,53 @@ module.exports = async function handler(request, response) {
   try {
     const user = await getUserFromToken(supabaseUrl, anonKey, accessToken);
     const includePrices = Boolean(user);
-    let source = "local-seed";
-    let products;
-    let brands = [];
+    const key = cacheKey(includePrices, maxProducts);
+    const ttlMs = includePrices ? AUTHENTICATED_CATALOG_TTL_MS : PUBLIC_CATALOG_TTL_MS;
+    const cachedCatalog = getCachedCatalog(key, ttlMs);
+
+    if (cachedCatalog) {
+      response.setHeader("X-EXTINROD-Catalog-Cache", cachedCatalog.cache);
+      response.setHeader("Cache-Control", includePrices ? "private, max-age=60" : "s-maxage=1800, stale-while-revalidate=86400");
+      response.status(200).json(cachedCatalog);
+      return;
+    }
+
+    let payload;
 
     if (hasSyscomCredentials) {
       try {
         const syscomToken = await getSyscomAccessToken();
-        products = await getSyscomProducts(syscomToken, includePrices, maxProducts);
-        brands = await getSyscomBrandLogos(syscomToken, products);
-        source = "syscom";
+        const products = await getSyscomProducts(syscomToken, includePrices, maxProducts);
+        const brands = await getSyscomBrandLogos(syscomToken, products);
+        payload = buildCatalogPayload({
+          source: "syscom",
+          includePrices,
+          products,
+          brands,
+        });
       } catch (error) {
-        const catalog = readLocalCatalog();
-        products = catalog.products.map((product) => mapLocalProduct(product, includePrices));
-        source = `local-seed:${error.message}`;
+        const staleCatalog = getCachedCatalog(key, ttlMs, true);
+        if (staleCatalog) {
+          response.setHeader("X-EXTINROD-Catalog-Cache", "stale");
+          response.setHeader("Cache-Control", includePrices ? "private, max-age=60" : "s-maxage=300, stale-while-revalidate=86400");
+          response.status(200).json({
+            ...staleCatalog,
+            source: `${staleCatalog.source}:stale:${error.message}`,
+          });
+          return;
+        }
+
+        payload = getLocalCatalogPayload(includePrices, `local-seed:${error.message}`);
       }
     } else {
-      const catalog = readLocalCatalog();
-      products = catalog.products.map((product) => mapLocalProduct(product, includePrices));
+      payload = getLocalCatalogPayload(includePrices);
     }
 
-    const categories = FEATURED_CATEGORIES.map((category) => ({
-      id: category.id,
-      name: category.name,
-      summary: category.summary,
-      image: publicCategoryImage(products, category),
-    }));
+    setCachedCatalog(key, payload);
 
-    response.setHeader("Cache-Control", includePrices ? "no-store" : "s-maxage=300, stale-while-revalidate=3600");
-    response.status(200).json({
-      source,
-      authenticated: includePrices,
-      pricesVisible: includePrices,
-      updatedAt: new Date().toISOString(),
-      categories,
-      brands,
-      products,
-    });
+    response.setHeader("X-EXTINROD-Catalog-Cache", payload.cache);
+    response.setHeader("Cache-Control", includePrices ? "private, max-age=60" : "s-maxage=1800, stale-while-revalidate=86400");
+    response.status(200).json(payload);
   } catch (error) {
     response.status(500).json({
       error: "Catalog unavailable",
