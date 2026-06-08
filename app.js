@@ -1322,6 +1322,55 @@ if (productDetail && !grid) {
   loadProductsFromApi();
 }
 
+const standaloneQuoteForm = document.querySelector("#standaloneQuoteForm");
+const standaloneQuoteStatus = document.querySelector("#standaloneQuoteStatus");
+
+standaloneQuoteForm?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const submitButton = standaloneQuoteForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+  setFormStatus(standaloneQuoteStatus, "Registrando solicitud en CRM...", "info");
+
+  try {
+    const formData = new FormData(standaloneQuoteForm);
+    const payload = Object.fromEntries(formData.entries());
+    const message = [
+      `Servicio: ${payload.servicio || "No especificado"}`,
+      `Inmueble: ${payload.inmueble || "No especificado"}`,
+      `Ubicacion: ${payload.estado || ""} ${payload.municipio || ""}`.trim(),
+      `Alcance: ${payload.alcance || "Por definir"}`,
+    ].join("\n");
+
+    const response = await fetch("/api/quote-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customer: {
+          contact_name: payload.contact_name,
+          email: payload.email,
+          phone: payload.phone,
+          company_name: payload.company_name,
+        },
+        message,
+        items: [{ sku: "SERVICIO-WEB", model: payload.servicio, name: payload.servicio, brand: "EXTINROD", qty: 1 }],
+      }),
+    });
+    const body = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      setFormStatus(standaloneQuoteStatus, body.error || "No se pudo registrar la solicitud.", "error");
+      return;
+    }
+
+    standaloneQuoteForm.reset();
+    setFormStatus(standaloneQuoteStatus, "Solicitud registrada. El equipo comercial le dara seguimiento.", "ok");
+  } catch (error) {
+    setFormStatus(standaloneQuoteStatus, error.message || "No se pudo registrar la solicitud.", "error");
+  } finally {
+    submitButton.disabled = false;
+  }
+});
+
 clientRegisterForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const submitButton = clientRegisterForm.querySelector("button[type='submit']");

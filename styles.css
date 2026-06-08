@@ -754,6 +754,194 @@ h3 {
   grid-column: span 2;
 }
 
+.proof-grid,
+.lead-capture,
+.quote-builder {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(300px, 1.1fr);
+  gap: clamp(24px, 5vw, 64px);
+  align-items: center;
+  background: var(--white);
+}
+
+.proof-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.proof-cards article {
+  min-height: 150px;
+  display: grid;
+  align-content: center;
+  gap: 8px;
+  padding: 22px;
+  border: 1px solid rgba(36, 87, 109, 0.12);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.proof-cards strong {
+  color: var(--red);
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  line-height: 1;
+}
+
+.proof-cards span {
+  color: var(--steel);
+  font-weight: 900;
+}
+
+.trust-list,
+.crm-flow {
+  display: grid;
+  gap: 24px;
+  background:
+    linear-gradient(135deg, rgba(17, 17, 17, 0.96), rgba(36, 87, 109, 0.88)),
+    var(--charcoal);
+  color: var(--white);
+}
+
+.trust-list h2,
+.crm-flow h2 {
+  color: var(--white);
+}
+
+.pill-list,
+.crm-flow div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill-list span,
+.crm-flow span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 900;
+}
+
+.quick-form,
+.quote-form-page {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(36, 87, 109, 0.12);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.quick-form label,
+.quote-form-page label {
+  display: grid;
+  gap: 7px;
+  color: var(--steel);
+  font-size: 0.84rem;
+  font-weight: 900;
+}
+
+.quick-form input,
+.quick-form select,
+.quote-form-page input,
+.quote-form-page select,
+.quote-form-page textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid #ccd5e3;
+  border-radius: 7px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+
+.quote-form-page textarea {
+  min-height: 110px;
+  padding-top: 12px;
+  resize: vertical;
+}
+
+.quote-form-page label:nth-child(3),
+.quote-form-page button,
+.quick-form button {
+  grid-column: 1 / -1;
+}
+
+.rich-service .button {
+  width: fit-content;
+  margin-top: 14px;
+}
+
+.service-rich-copy {
+  display: grid;
+  gap: 14px;
+}
+
+.service-rich-copy h3 {
+  margin: 0;
+  color: var(--red);
+  font-size: 1rem;
+}
+
+.faq-section {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.7fr) minmax(300px, 1.3fr);
+  gap: clamp(24px, 5vw, 64px);
+  background: var(--white);
+}
+
+.faq-list {
+  display: grid;
+  gap: 10px;
+}
+
+.faq-list details,
+.blog-grid article {
+  padding: 20px;
+  border: 1px solid rgba(36, 87, 109, 0.12);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.faq-list summary {
+  color: var(--ink);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  background: var(--white);
+}
+
+.blog-grid article {
+  display: grid;
+  gap: 12px;
+}
+
+.blog-grid span {
+  color: var(--red);
+  font-weight: 900;
+}
+
+.blog-grid h2 {
+  font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+}
+
+.text-link.dark {
+  color: var(--red);
+}
+
 .cta-strip .button {
   justify-self: end;
 }
@@ -2480,6 +2668,10 @@ h3 {
   .split,
   .about-intro,
   .about-commitment,
+  .proof-grid,
+  .lead-capture,
+  .quote-builder,
+  .faq-section,
   .cta-strip,
   .contact-layout,
   .service-detail,
@@ -2492,7 +2684,14 @@ h3 {
   .about-metrics,
   .about-flow,
   .division-grid,
-  .commitment-grid {
+  .commitment-grid,
+  .proof-cards,
+  .blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-form,
+  .quote-form-page {
     grid-template-columns: 1fr;
   }
 

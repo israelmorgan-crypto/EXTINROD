@@ -21,6 +21,48 @@ async function getUserFromToken(supabaseUrl, anonKey, token) {
   return user;
 }
 
+async function findOrCreateCustomer(supabaseUrl, serviceRoleKey, data) {
+  const email = String(data.email || "").trim().toLowerCase();
+  if (!email) throw new Error("Captura un correo para registrar la cotizacion.");
+
+  const customerUrl = new URL(`${supabaseUrl}/rest/v1/customers`);
+  customerUrl.searchParams.set("email", `eq.${email}`);
+  customerUrl.searchParams.set("select", "id,company_name,contact_name,email,phone");
+
+  const customerResponse = await fetch(customerUrl, {
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      Accept: "application/json",
+    },
+  });
+  const customers = await readJson(customerResponse);
+  const existing = Array.isArray(customers) ? customers[0] : undefined;
+  if (existing) return existing;
+
+  const displayName = String(data.contact_name || email).trim();
+  const createResponse = await fetch(`${supabaseUrl}/rest/v1/customers`, {
+    method: "POST",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
+    },
+    body: JSON.stringify({
+      company_name: String(data.company_name || displayName).trim(),
+      contact_name: displayName,
+      email,
+      phone: String(data.phone || "").trim(),
+      status: "prospecto",
+      sector: "Web",
+    }),
+  });
+  const created = await readJson(createResponse);
+  if (!createResponse.ok) throw new Error(created?.message || "No se pudo crear el cliente.");
+  return Array.isArray(created) ? created[0] : created;
+}
+
 module.exports = async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -40,13 +82,7 @@ module.exports = async function handler(request, response) {
     return;
   }
 
-  if (!accessToken) {
-    response.status(401).json({ error: "Inicia sesion para generar tu cotizacion." });
-    return;
-  }
-
   try {
-    const user = await getUserFromToken(supabaseUrl, anonKey, accessToken);
     const body = typeof request.body === "string" ? JSON.parse(request.body || "{}") : request.body || {};
     const items = Array.isArray(body.items) ? body.items : [];
     const message = String(body.message || "").trim();
@@ -56,19 +92,18 @@ module.exports = async function handler(request, response) {
       return;
     }
 
-    const customerUrl = new URL(`${supabaseUrl}/rest/v1/customers`);
-    customerUrl.searchParams.set("email", `eq.${String(user.email).toLowerCase()}`);
-    customerUrl.searchParams.set("select", "id,company_name,contact_name,email,phone");
-
-    const customerResponse = await fetch(customerUrl, {
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-        Accept: "application/json",
-      },
-    });
-    const customers = await readJson(customerResponse);
-    const customer = Array.isArray(customers) ? customers[0] : undefined;
+    let customer;
+    if (accessToken) {
+      const user = await getUserFromToken(supabaseUrl, anonKey, accessToken);
+      customer = await findOrCreateCustomer(supabaseUrl, serviceRoleKey, {
+        email: user.email,
+        contact_name: user.user_metadata?.full_name || user.email,
+        company_name: user.user_metadata?.company_name || user.email,
+        phone: user.user_metadata?.phone || "",
+      });
+    } else {
+      customer = await findOrCreateCustomer(supabaseUrl, serviceRoleKey, body.customer || {});
+    }
 
     if (!customer) {
       response.status(403).json({ error: "No encontramos tu perfil de cliente." });
